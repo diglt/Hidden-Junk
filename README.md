@@ -1,6 +1,5 @@
 # script
-all of my pastebin scripts,
+Backup For My Scripts.
 
-
-the entire scripts are created by me, however the library is https://rayfield.dev/introduction/
-I DO NOT TAKE OWNERSHIP FOR THE LIBRARY, ONLY THE CODE INSIDE THE SCRIPTS
+I Don't take ownership of the library inside of my scripts. 
+The library is from https://rayfield.dev/introduction/ go check it out!
