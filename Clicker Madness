@@ -1,0 +1,128 @@
+getgenv().AutoTap = false
+getgenv().AutoRebirth = false
+getgenv().AutobuyEgg = false
+
+
+function doTap()
+    spawn(function()
+      while AutoTap == true do
+        if not getgenv() then break end
+        local args = {[1] = 1}
+      game:GetService("ReplicatedStorage").Aero.AeroRemoteServices.ClickService.Click:FireServer(unpack(args))
+    wait()
+      end
+  end)
+end
+
+
+
+function doRebirth()
+    spawn(function()
+       while AutoRebirth == true do
+        if not getgenv() then break end
+          local args = {[1] = 1 }  -- rebirth amount
+          game:GetService("ReplicatedStorage").Aero.AeroRemoteServices.RebirthService.BuyRebirths:FireServer(unpack(args))
+        wait()
+     end
+  end)
+end
+
+
+function doPetBuy()
+    spawn(function()
+      while AutobuyEgg == true do
+        if not AutobuyEgg then break end
+        local args = {[1] = "basic"}
+        game:GetService("ReplicatedStorage").Aero.AeroRemoteServices.EggService.Purchase:FireServer(unpack(args))
+     wait()        
+     end
+  end)
+end
+
+
+-- Everything below is for teleporting
+
+function getCurrentPlayerPOS()
+    local playr = game.Players.LocalPlayer
+    if playr.Character then
+    return playr.Character.HumanoidRootPart.Positon
+    end
+    return false
+end
+
+
+function teleportTo(placeCFrame)
+    local plyr = game.Players.LocalPlayer
+    if plyr.Character then
+        plyr.Character.HumanoidRootPart.CFrame = placeCFrame
+end
+end
+
+function teleportWorld(world)
+    if game:GetService("Workspace").Worlds:FindFirstChild(world) then
+        teleportTo(game:GetService("Workspace").Worlds[world].Teleport.CFrame)
+    end
+end
+
+
+-- GUI
+
+
+local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
+
+local w = library:CreateWindow("Clicking Madness") -- Creates the window
+
+local b = w:CreateFolder("Clicks Farm")
+
+local c = w:CreateFolder("Pet") 
+
+local d = w:CreateFolder("Teleport")
+
+b:DestroyGui()
+
+
+b:Toggle("Auto Taps",function(bool)
+  getgenv().AutoTap = bool
+  print("Auto Taps is ", bool)
+  if bool then
+    doTap()
+  end
+end)
+
+local selectedRebirth
+
+b:Dropdown("Rebirth Amt",{"1","10","100","1000"},true,function(value)
+  selectedRebirth = value
+  print(value)
+end)
+
+b:Toggle("Auto Rebirths",function(bool)
+  getgenv().AutoRebirth = bool
+  print("Auto Rebirth is", bool)
+  if bool and selectedRebirth then 
+    doRebirth(selectedRebirth)
+  end
+end)
+
+
+c:Toggle("Auto Buy Pet",function(bool)
+  getgenv().AutobuyEgg = bool
+  print("Auto Buy Pet is ", bool)
+  if bool then
+    doPetBuy()
+  end
+end)
+
+local selectedWorld
+
+d:Dropdown("World",{"Lava","Desert","Ocean","Winter","Toxic"},true,function(value)
+  selectedWorld = value
+  print(value)
+end)
+
+
+d:Button("Teleport Selected",function()
+  if selectedWorld then 
+    teleportWorld(selectedWorld)
+  end
+end)
