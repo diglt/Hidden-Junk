@@ -1,0 +1,390 @@
+local Configs = {
+    whitelist = {},
+}
+getgenv().ToggleEsp = false
+getgenv().ToggleNoclip = false
+getgenv().ToggleKill = false
+getgenv().ToggleAura = false
+getgenv().ToggleArrest = false
+
+local cloneref = cloneref or function(obj) return obj end
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+local Teams = cloneref(game:GetService("Teams"))
+local Workspace = cloneref(game:GetService("Workspace"))
+local Players = cloneref(game:GetService("Players"))
+local lp = cloneref(Players.LocalPlayer)
+local DmgRemote = ReplicatedStorage.meleeEvent
+local ArrestRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("arrest"))  
+
+
+table.insert(Configs.whitelist,lp.Name)
+
+local function getchar(plr)
+    return (plr or lp).Character
+end
+
+
+local function gethumanoid(plr)
+    local char = plr and plr:IsA("Model") and plr or getchar(plr)
+    return (char and char:FindFirstChildWhichIsA("Humanoid")),char
+end
+
+local function getroot(plr)
+    local char = plr and plr:IsA("Model") and plr or getchar(plr)
+    return (char and char:FindFirstChild("HumanoidRootPart")),char
+end
+
+
+local function IsValidMember(obj,target)
+    return obj:IsDescendantOf(target or game)
+end
+
+
+local function IsAlive(Humanoid)
+    return Humanoid and (IsValidMember(Humanoid) and Humanoid.Health > 0)
+end
+
+
+local function GetHumanoids()
+    local Humanoids = {}
+    for i,v in Players:GetPlayers() do
+        if not table.find(Configs.whitelist,v.Name) then 
+            local Humanoid,char = gethumanoid(v)
+            if IsAlive(Humanoid) then 
+                Humanoids[char] = Humanoid
+            end
+        end
+    end
+    return Humanoids
+end
+
+
+local function NoClip()
+    while ToggleNoclip do
+    local char = getchar(lp)
+        for i,child in pairs(char:GetChildren()) do
+                if child:IsA("Part") then 
+            child.CanCollide = false
+            end
+        end
+        task.wait()
+    end
+end
+
+local function Clip()
+    local char = getchar(lp)
+        for i,child in pairs(char:GetChildren()) do
+                if child:IsA("Part") then 
+            child.CanCollide = true
+        end
+    end
+end
+
+local function KillAll()
+    while getgenv().ToggleKill do
+    for char,Humanoid in GetHumanoids() do
+        for _,v in pairs(Players:GetPlayers()) do
+            if v.Character == char and v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist,v.Name) then
+                local Target = v
+                    if IsValidMember(char) and IsAlive(Humanoid) and not char:FindFirstChildWhichIsA("ForceField") then
+                    local lpchar = getchar()
+                    local lphuman = gethumanoid(lp)
+                    local InvalidMember = false
+                    local PlayerRoot = getroot(char)
+                    local lpRoot = getroot()
+                    repeat
+                    if IsValidMember(lpchar) and IsValidMember(lpRoot) and IsAlive(lphuman) then
+                        lpRoot.CFrame = PlayerRoot.CFrame - Vector3.new(0,5,0)
+                        DmgRemote:FireServer(Target)
+                        task.wait()
+                        elseif not IsValidMember(lpchar) or not IsAlive(lphuman) or not getgenv().ToggleKill then
+                        InvalidMember = true
+                            break
+                                end
+                            until not IsAlive(Humanoid) or not getgenv().ToggleKill
+                        end
+                    end
+                end
+            end
+    task.wait()
+    end
+end
+
+
+local function Esp()
+    local Highlights = {} 
+
+    while ToggleEsp do 
+        for _, player in pairs(Players:GetPlayers()) do 
+            if not table.find(Configs.whitelist, player.Name) then
+                local VChar = getchar(player)
+                local VHumanoid = gethumanoid(player)
+                if IsAlive(VHumanoid) then 
+                    local Highlight = Highlights[player] -- Add Players Highlight To Table
+                    if not Highlight then -- If The Player Doesn't Have A Highlight Then 
+                        Highlight = cloneref(Instance.new("Highlight"))
+                        Highlight.Name = player.Name
+                        Highlight.FillTransparency = 0.5
+                        Highlight.OutlineColor = Color3.new(0, 0, 0)
+                        Highlight.OutlineTransparency = 0.5
+                        Highlight.Parent = VChar
+                        Highlights[player] = Highlight  -- Set The Player In Table To A Highlight
+                    else
+                        Highlight.Parent = VChar
+                    end
+                    if player.Team then
+                        local teamName = player.Team.Name
+                        if teamName == "Guards" then
+                            Highlight.FillColor = Color3.new(0, 0, 1) -- Blue for Guards
+                        elseif teamName == "Inmates" then
+                            Highlight.FillColor = Color3.new(1, 0.5, 0) -- Orange for Inmates
+                        elseif teamName == "Criminals" then
+                            Highlight.FillColor = Color3.new(1, 0, 1) -- Pink for Criminals
+                        end
+                    end
+                else
+                    local Highlight = Highlights[player]
+                    if Highlight then
+                        Highlight:Destroy()
+                        Highlights[player] = nil
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end
+
+local function FindEsp()
+    for i,v in pairs(Players:GetPlayers()) do 
+        local Vchar = getchar(v)
+        for i,Highlight in Vchar:GetDescendants() do 
+            if Highlight:IsA("Highlight") then 
+                Highlight:Destroy()
+            end
+        end
+    end
+end
+
+
+
+local function AutoArrest()
+    while ToggleArrest do
+        if IsValidMember(getchar(lp)) then 
+            for _,v in pairs(Players:GetPlayers()) do 
+                if IsValidMember(getchar(v)) and v.Team ~= Teams:FindFirstChild("Neutral") then 
+                    local PotTarget = v 
+                    if PotTarget.Team == Teams:FindFirstChild("Criminals") and PotTarget.Name ~= lp.Name then 
+                        local TargetRoot = getroot(PotTarget)
+                        local LpRoot = getroot(lp)
+                        repeat 
+                            LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,5)
+                            ArrestRemote:InvokeServer(TargetRoot)
+                            task.wait()
+                        until PotTarget.Team ~= Teams:FindFirstChild("Criminals")
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end
+
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Neural Hub",
+    LoadingTitle = "Goodnight punpun",
+    LoadingSubtitle = "by diglt",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = nil, 
+       FileName = "Neural Hub"
+    },
+    Discord = {
+       Enabled = true,
+       Invite = "3M4PkmNgTw",
+       RememberJoins = true 
+    },
+ })
+ Rayfield:Notify({
+   Title = "Hey!",
+   Content = "You should join the discord for more scripts like this B-)",
+   Duration = 3,
+   Image = 4483362458,
+   Actions = {
+      Ignore = {
+         Name = "Okay!",
+         Callback = function()
+      end
+   },
+},
+})
+
+ local Tab = Window:CreateTab("Main",4483362458)
+ local Tab1 = Window:CreateTab("Other",4483362458) 
+ local Section = Tab1:CreateSection("Other Features")
+
+ local Slider = Tab1:CreateSlider({
+    Name = "Set Walkspeed",
+    Range = {0, 500},
+    Increment = 10,
+    Suffix = "",
+    CurrentValue = 50,
+    Callback = function(Value)
+        local LpHuman = gethumanoid(lp)
+        LpHuman.WalkSpeed = Value
+    end,
+ })
+
+ local Button = Tab1:CreateButton({
+    Name = "Destroy Gui",
+    Callback = function()
+        Rayfield:Destroy()
+    end,
+ })
+
+ local Paragraph = Tab1:CreateParagraph({Title = "Credits to:", Content = "Neural - Script Creator"})
+
+
+ local Section = Tab:CreateSection("Main Features")
+
+local Toggle = Tab:CreateToggle({
+   Name = "Kill All",
+   CurrentValue = false,
+   Callback = function(bool)
+    getgenv().ToggleKill = bool
+    if bool then
+        KillAll()
+    end
+   end,
+})
+
+local Toggle = Tab:CreateToggle({
+    Name = "Auto Arrest Criminals",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleArrest = bool
+     if bool then
+         AutoArrest()
+     end
+    end,
+ })
+
+local Section = Tab:CreateSection("Kill Aura")
+
+local AuraRange
+local Slider = Tab:CreateSlider({
+    Name = "Set Aura Range",
+    Range = {0, 30},
+    Increment = 5,
+    Suffix = "",
+    CurrentValue = 25,
+    Callback = function(Value)
+        AuraRange = Value
+        return AuraRange
+    end,
+ })
+
+local function ShowAuraRadius()
+    if not IsValidMember(getchar(lp)) then 
+        return
+    end 
+    local Humanoid = gethumanoid(lp)
+    local char = getchar(lp)
+    local RadiusPart = cloneref(Instance.new("Part"))
+    RadiusPart.Size = Vector3.new(AuraRange, 0, AuraRange)
+    RadiusPart.Transparency = 0.5
+    RadiusPart.Anchored = true
+    RadiusPart.CanCollide = false
+    RadiusPart.BrickColor = BrickColor.new("Bright red")
+    RadiusPart.Parent = cloneref(game:GetService("Workspace"))
+    local yOffset = -2.5
+    local LpRoot = getroot(lp)
+    if IsValidMember(char) and IsAlive(Humanoid) and IsValidMember(LpRoot) then
+        local CharacterPosition = LpRoot.Position
+        RadiusPart.Position = Vector3.new(CharacterPosition.X, CharacterPosition.Y + yOffset, CharacterPosition.Z)
+        wait()
+    end
+    RadiusPart:Destroy()
+end
+
+local function KillAura()
+    while ToggleAura do
+        ShowAuraRadius()
+        if IsValidMember(getchar(lp)) then 
+            local LpHuman = gethumanoid(lp)
+            local ChosenDist = AuraRange
+            if IsAlive(LpHuman) then 
+                local DmgRemote = ReplicatedStorage.meleeEvent
+                for i,v in pairs(Players:GetPlayers()) do 
+                    if IsValidMember(v) and not table.find(Configs.whitelist,v.Name) then 
+                        local Target = v
+                        local VRoot = getroot(v)
+                        local LRoot = getroot(lp)
+                        local VHuman = gethumanoid(v)
+                        if IsAlive(LpHuman) and IsAlive(VHuman) then 
+                            local DistBetween = (LRoot.Position - VRoot.Position).Magnitude
+                            if DistBetween <= ChosenDist then
+                                DmgRemote:FireServer(Target)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end
+
+local Toggle = Tab:CreateToggle({
+    Name = "Visible Kill Aura",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleAura = bool
+     if bool then
+         KillAura()
+     end
+    end,
+ })
+
+
+ 
+ local Section = Tab:CreateSection("Non Aggressive Features")
+
+local Toggle = Tab:CreateToggle({
+    Name = "Teamed Esp",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleEsp = bool
+     if bool then
+         Esp()
+     end
+    end,
+ })
+
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Noclip",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleNoclip = bool
+     if bool then
+         NoClip()
+     else
+        Clip()
+     end
+    end,
+ })
+
+
+ local Button = Tab:CreateButton({
+    Name = "Remove Esp",
+    Callback = function()
+        FindEsp()
+    end,
+ })
+
+
+
+
