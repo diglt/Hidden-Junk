@@ -6,6 +6,7 @@ getgenv().ToggleNoclip = false
 getgenv().ToggleKill = false
 getgenv().ToggleAura = false
 getgenv().ToggleArrest = false
+getgenv().ToggleTargetKill = false
 
 local cloneref = cloneref or function(obj) return obj end
 local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
@@ -77,6 +78,34 @@ local function Clip()
                 if child:IsA("Part") then 
             child.CanCollide = true
         end
+    end
+end
+
+local function TargetKill(Target)
+    while ToggleTargetKill do 
+            for _,v in pairs(Players:GetPlayers()) do 
+                if v.Name == Target then 
+                    local GuyToKill = v 
+
+                    local LpRoot = getroot(lp)
+                    local OldCFrame = LpRoot.CFrame 
+                    local LpHuman = gethumanoid(lp)
+
+                    local TargetRoot = getroot(v)
+                    local TargetHumanoid = gethumanoid(v)
+                    local TargetChar = getchar(v)
+                    if not TargetChar:FindFirstChildWhichIsA("ForceField") and IsAlive(TargetHumanoid) and IsValidMember(LpRoot) and IsAlive(LpHuman) then
+                        repeat
+                                LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,3)
+                                DmgRemote:FireServer(GuyToKill) 
+                                task.wait()
+                        until not IsAlive(TargetHumanoid)
+                    LpRoot.CFrame = OldCFrame
+                else
+                end
+            end
+        end
+        task.wait()
     end
 end
 
@@ -251,7 +280,7 @@ local Window = Rayfield:CreateWindow({
  local Section = Tab:CreateSection("Main Features")
 
 local Toggle = Tab:CreateToggle({
-   Name = "Kill All",
+   Name = "Auto Kill All",
    CurrentValue = false,
    Callback = function(bool)
     getgenv().ToggleKill = bool
@@ -260,6 +289,28 @@ local Toggle = Tab:CreateToggle({
     end
    end,
 })
+
+local ChosenPlayer 
+local Input = Tab:CreateInput({
+    Name = "Player Name To Kill",
+    PlaceholderText = "...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        ChosenPlayer = Text
+        return ChosenPlayer
+    end,
+ })
+
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Kill Chosen Player",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleTargetKill = bool
+     if bool then
+        TargetKill(ChosenPlayer)
+     end
+    end,
+ })
 
 local Toggle = Tab:CreateToggle({
     Name = "Auto Arrest Criminals",
