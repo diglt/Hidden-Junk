@@ -7,6 +7,7 @@ getgenv().ToggleKill = false
 getgenv().ToggleAura = false
 getgenv().ToggleArrest = false
 getgenv().ToggleTargetKill = false
+getgenv().ToggleGodMode = false
 
 local cloneref = cloneref or function(obj) return obj end
 local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
@@ -16,6 +17,9 @@ local Players = cloneref(game:GetService("Players"))
 local lp = cloneref(Players.LocalPlayer)
 local DmgRemote = ReplicatedStorage.meleeEvent
 local ArrestRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("arrest"))  
+local TeamRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("TeamEvent"))
+local CarSpawnRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"))
+local ClientItemHandler = cloneref(lp:WaitForChild("PlayerScripts"):WaitForChild("ClientItemHandler"))
 
 
 table.insert(Configs.whitelist,lp.Name)
@@ -106,6 +110,32 @@ local function TargetKill(Target)
             end
         end
         task.wait()
+    end
+end
+
+local function TargetTeleport(Target)
+            for _,v in pairs(Players:GetPlayers()) do 
+                if v.Name == Target then 
+                local GuyToTeleport = v 
+                local LpRoot = getroot(lp)
+                local LpHuman = gethumanoid(lp)
+                local TargetRoot = getroot(GuyToTeleport)
+                if IsValidMember(LpRoot) and IsValidMember(TargetRoot) then 
+            LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,2,0)
+            end
+        end
+        task.wait()
+    end
+end
+
+local function BecomeCriminal()
+    if IsValidMember(getchar(lp)) and IsAlive(gethumanoid(lp)) then  
+        local LpRoot = getroot(lp)
+        local LpHumanoid = gethumanoid(lp)
+        local OldCFrame = LpRoot.CFrame
+        LpRoot.CFrame = CFrame.new(-975, 109, 2062)
+        task.wait()
+        LpRoot.CFrame = OldCFrame
     end
 end
 
@@ -201,16 +231,16 @@ local function AutoArrest()
     while ToggleArrest do
         if IsValidMember(getchar(lp)) then 
             for _,v in pairs(Players:GetPlayers()) do 
-                if IsValidMember(getchar(v)) and v.Team ~= Teams:FindFirstChild("Neutral") then 
+                if IsAlive(gethumanoid(lp)) and v.Team ~= Teams:FindFirstChild("Neutral") then 
                     local PotTarget = v 
                     if PotTarget.Team == Teams:FindFirstChild("Criminals") and PotTarget.Name ~= lp.Name then 
                         local TargetRoot = getroot(PotTarget)
-                        local LpRoot = getroot(lp)
+                        local LpRoot = getroot(lp) 
                         repeat 
-                            LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,5)
-                            ArrestRemote:InvokeServer(TargetRoot)
-                            task.wait()
-                        until PotTarget.Team ~= Teams:FindFirstChild("Criminals")
+                                LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,5)
+                                ArrestRemote:InvokeServer(TargetRoot)
+                                task.wait()
+                        until PotTarget.Team ~= Teams:FindFirstChild("Criminals") or not ToggleArrest
                     end
                 end
             end
@@ -251,21 +281,11 @@ local Window = Rayfield:CreateWindow({
 },
 })
 
- local Tab = Window:CreateTab("Main",4483362458)
+ local Tab = Window:CreateTab("Aggressive Feautres",4483362458)
+ local Tab9 = Window:CreateTab("Non Aggressive Feautres",4483362458)
+ local Tab8 = Window:CreateTab("Team Change",4483362458)
  local Tab1 = Window:CreateTab("Other",4483362458) 
  local Section = Tab1:CreateSection("Other Features")
-
- local Slider = Tab1:CreateSlider({
-    Name = "Set Walkspeed",
-    Range = {0, 500},
-    Increment = 10,
-    Suffix = "",
-    CurrentValue = 50,
-    Callback = function(Value)
-        local LpHuman = gethumanoid(lp)
-        LpHuman.WalkSpeed = Value
-    end,
- })
 
  local Button = Tab1:CreateButton({
     Name = "Destroy Gui",
@@ -290,14 +310,14 @@ local Toggle = Tab:CreateToggle({
    end,
 })
 
-local ChosenPlayer 
+local ChosenKillPlayer 
 local Input = Tab:CreateInput({
     Name = "Player Name To Kill",
     PlaceholderText = "...",
     RemoveTextAfterFocusLost = false,
     Callback = function(Text)
-        ChosenPlayer = Text
-        return ChosenPlayer
+        ChosenKillPlayer = Text
+        return ChosenKillPlayer
     end,
  })
 
@@ -307,7 +327,7 @@ local Input = Tab:CreateInput({
     Callback = function(bool)
      getgenv().ToggleTargetKill = bool
      if bool then
-        TargetKill(ChosenPlayer)
+        TargetKill(ChosenKillPlayer)
      end
     end,
  })
@@ -402,9 +422,10 @@ local Toggle = Tab:CreateToggle({
 
 
  
- local Section = Tab:CreateSection("Non Aggressive Features")
+ local Section = Tab9:CreateSection("Main")
 
-local Toggle = Tab:CreateToggle({
+
+local Toggle = Tab9:CreateToggle({
     Name = "Teamed Esp",
     CurrentValue = false,
     Callback = function(bool)
@@ -415,7 +436,7 @@ local Toggle = Tab:CreateToggle({
     end,
  })
 
- local Toggle = Tab:CreateToggle({
+ local Toggle = Tab9:CreateToggle({
     Name = "Auto Noclip",
     CurrentValue = false,
     Callback = function(bool)
@@ -429,7 +450,7 @@ local Toggle = Tab:CreateToggle({
  })
 
 
- local Button = Tab:CreateButton({
+ local Button = Tab9:CreateButton({
     Name = "Remove Esp",
     Callback = function()
         FindEsp()
@@ -437,5 +458,45 @@ local Toggle = Tab:CreateToggle({
  })
 
 
+ local Section = Tab9:CreateSection("Player Based")
 
+ local Slider = Tab9:CreateSlider({
+    Name = "Set Walkspeed",
+    Range = {0, 500},
+    Increment = 10,
+    Suffix = "",
+    CurrentValue = 50,
+    Callback = function(Value)
+        local LpHuman = gethumanoid(lp)
+        LpHuman.WalkSpeed = Value
+    end,
+ })
 
+ local ChosenTeleportPlayer 
+local Input = Tab9:CreateInput({
+    Name = "Player Name To Teleport",
+    PlaceholderText = "...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        ChosenTeleportPlayer = Text
+        return ChosenTeleportPlayer
+    end,
+ })
+
+ local Button = Tab9:CreateButton({
+    Name = "Teleport To Selected Player",
+    Callback = function()
+        TargetTeleport(ChosenTeleportPlayer)
+    end,
+ })
+
+ local Section = Tab8:CreateSection("Teams")
+
+ local Button = Tab8:CreateButton({
+    Name = "Become Criminal",
+    Callback = function()
+        BecomeCriminal()
+    end,
+ })
+
+ 
