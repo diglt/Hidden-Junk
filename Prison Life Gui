@@ -9,6 +9,8 @@ getgenv().ToggleAura = false
 getgenv().ToggleArrest = false
 getgenv().ToggleTargetKill = false
 getgenv().ToggleGodMode = false
+getgenv().ProtectPresident = false
+
 
 local cloneref = cloneref or function(obj) return obj end
 local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
@@ -17,9 +19,10 @@ local Workspace = cloneref(game:GetService("Workspace"))
 local Players = cloneref(game:GetService("Players"))
 local lp = cloneref(Players.LocalPlayer)
 local DmgRemote = ReplicatedStorage.meleeEvent
-local ArrestRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("arrest"))  
-local TeamRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("TeamEvent"))
-local CarSpawnRemote = cloneref(Workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"))
+local CallingRemoteFolder = cloneref(Workspace:WaitForChild("Remote"))
+local ArrestRemote = cloneref(CallingRemoteFolder:WaitForChild("arrest"))  
+local TeamRemote = cloneref(CallingRemoteFolder:WaitForChild("TeamEvent"))
+local CarSpawnRemote = cloneref(CallingRemoteFolder:WaitForChild("ItemHandler"))
 local ClientItemHandler = cloneref(lp:WaitForChild("PlayerScripts"):WaitForChild("ClientItemHandler"))
 
 
@@ -48,6 +51,14 @@ end
 
 local function IsAlive(Humanoid)
     return Humanoid and (IsValidMember(Humanoid) and Humanoid.Health > 0)
+end
+
+local function DenySeating()
+    for i,v in pairs(Workspace:GetDescendants()) do 
+        if v:IsA("Seat") then 
+            v:Destroy()
+        end
+    end
 end
 
 
@@ -104,7 +115,7 @@ local function TargetKill(Target)
                                 LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,3)
                                 DmgRemote:FireServer(GuyToKill) 
                                 task.wait()
-                        until not IsAlive(TargetHumanoid)
+                        until not IsAlive(TargetHumanoid) or not ToggleTargetKill
                     LpRoot.CFrame = OldCFrame
                 else
                 end
@@ -127,6 +138,30 @@ local function TargetTeleport(Target)
         end
         task.wait()
     end
+end
+
+local function PresidentTargetTeleport(Target)
+    while ProtectPresident do 
+        for _,v in pairs(Players:GetPlayers()) do 
+            if v.Name == Target then  
+                if IsAlive(gethumanoid(lp)) and IsValidMember(getchar(v)) then 
+                    local GuyToTeleport = v 
+                    local LpRoot = getroot(lp)
+                    local LpHuman = gethumanoid(lp)
+                    local TargetRoot = getroot(GuyToTeleport)
+                    if IsValidMember(LpRoot) and IsValidMember(TargetRoot) then 
+                    LpRoot.CFrame = TargetRoot.CFrame + Vector3.new(0,0,3)
+                wait()
+                else
+                    break
+                end
+            end
+        end
+    end
+    wait(0.1)
+    end
+    local ToNumberPresident = tonumber(Target)
+    table.remove(Configs.whitelist,ToNumberPresident)
 end
 
 local function BecomeCriminal()
@@ -232,9 +267,10 @@ local function AutoArrest()
     while ToggleArrest do
         if IsValidMember(getchar(lp)) then 
             for _,v in pairs(Players:GetPlayers()) do 
-                if IsAlive(gethumanoid(lp)) and v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist, v.name) then 
+                if  v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist, v.name) then 
                     local PotTarget = v 
                     if PotTarget.Team == Teams:FindFirstChild("Criminals") and PotTarget.Name ~= lp.Name then 
+                        if IsValidMember(getchar(lp)) and IsAlive(gethumanoid(lp)) and IsValidMember(getchar(v)) and IsAlive(gethumanoid(v)) then 
                         local TargetRoot = getroot(PotTarget)
                         local LpRoot = getroot(lp) 
                         repeat 
@@ -242,6 +278,9 @@ local function AutoArrest()
                                 ArrestRemote:InvokeServer(TargetRoot)
                                 task.wait()
                         until PotTarget.Team ~= Teams:FindFirstChild("Criminals") or not ToggleArrest
+                    else
+                        wait()
+                        end
                     end
                 end
             end
@@ -472,7 +511,28 @@ local Toggle = Tab:CreateToggle({
     end,
  })
 
+ local ChosenMrPresident 
+local Input = Tab:CreateInput({
+    Name = "Player To Protect!",
+    PlaceholderText = "...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        ChosenMrPresident = Text
+        table.insert(Configs.whitelist,ChosenMrPresident)
+        return ChosenMrPresident
+    end,
+ })
 
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Protect Player (Use With Aura)!",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ProtectPresident = bool
+     if bool then
+        PresidentTargetTeleport(ChosenMrPresident)
+     end
+    end,
+ })
  
  local Section = Tab9:CreateSection("Main")
 
@@ -550,3 +610,5 @@ local Input = Tab9:CreateInput({
         BecomeCriminal()
     end,
  })
+
+ DenySeating()
