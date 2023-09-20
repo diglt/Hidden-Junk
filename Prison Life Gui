@@ -1,6 +1,7 @@
 local Configs = {
     whitelist = {},
 }
+
 getgenv().ToggleEsp = false
 getgenv().ToggleNoclip = false
 getgenv().ToggleKill = false
@@ -88,7 +89,7 @@ end
 local function TargetKill(Target)
     while ToggleTargetKill do 
             for _,v in pairs(Players:GetPlayers()) do 
-                if v.Name == Target then 
+                if v.Name == Target and not table.find(Configs.whitelist, v.name) then 
                     local GuyToKill = v 
 
                     local LpRoot = getroot(lp)
@@ -231,7 +232,7 @@ local function AutoArrest()
     while ToggleArrest do
         if IsValidMember(getchar(lp)) then 
             for _,v in pairs(Players:GetPlayers()) do 
-                if IsAlive(gethumanoid(lp)) and v.Team ~= Teams:FindFirstChild("Neutral") then 
+                if IsAlive(gethumanoid(lp)) and v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist, v.name) then 
                     local PotTarget = v 
                     if PotTarget.Team == Teams:FindFirstChild("Criminals") and PotTarget.Name ~= lp.Name then 
                         local TargetRoot = getroot(PotTarget)
@@ -285,7 +286,35 @@ local Window = Rayfield:CreateWindow({
  local Tab9 = Window:CreateTab("Non Aggressive Feautres",4483362458)
  local Tab8 = Window:CreateTab("Team Change",4483362458)
  local Tab1 = Window:CreateTab("Other",4483362458) 
- local Section = Tab1:CreateSection("Other Features")
+
+ local Section = Tab1:CreateSection("Whitelist Features")
+
+ local ChosenWhitelist
+ local Input = Tab1:CreateInput({
+     Name = "Add Player To Global Whitelist",
+     PlaceholderText = "...",
+     RemoveTextAfterFocusLost = false,
+     Callback = function(Text)
+        ChosenWhitelist = Text
+        table.insert(Configs.whitelist,ChosenWhitelist)
+        print(ChosenWhitelist)
+     end,
+  })
+ 
+  local ChosenRemoveWhitelist
+  local Input = Tab1:CreateInput({
+   Name = "Remove Player From Global Whitelist",
+   PlaceholderText = "...",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+    ChosenRemoveWhitelist = Text
+    local ToNumbWhitelist = tonumber(ChosenRemoveWhitelist)
+    print(ChosenRemoveWhitelist)
+      table.remove(Configs.whitelist,ToNumbWhitelist)
+   end,
+})
+
+local Section = Tab1:CreateSection("Other Stuff")
 
  local Button = Tab1:CreateButton({
     Name = "Destroy Gui",
@@ -498,5 +527,3 @@ local Input = Tab9:CreateInput({
         BecomeCriminal()
     end,
  })
-
- 
