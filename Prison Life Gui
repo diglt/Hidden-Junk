@@ -258,7 +258,7 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Goodnight punpun",
     LoadingSubtitle = "by diglt",
     ConfigurationSaving = {
-       Enabled = true,
+       Enabled = false,
        FolderName = nil, 
        FileName = "Neural Hub"
     },
@@ -268,23 +268,9 @@ local Window = Rayfield:CreateWindow({
        RememberJoins = true 
     },
  })
- Rayfield:Notify({
-   Title = "Hey!",
-   Content = "You should join the discord for more scripts like this B-)",
-   Duration = 3,
-   Image = 4483362458,
-   Actions = {
-      Ignore = {
-         Name = "Okay!",
-         Callback = function()
-      end
-   },
-},
-})
 
  local Tab = Window:CreateTab("Aggressive Feautres",4483362458)
  local Tab9 = Window:CreateTab("Non Aggressive Feautres",4483362458)
- local Tab8 = Window:CreateTab("Team Change",4483362458)
  local Tab1 = Window:CreateTab("Other",4483362458) 
 
  local Section = Tab1:CreateSection("Whitelist Features")
@@ -314,7 +300,28 @@ local Window = Rayfield:CreateWindow({
    end,
 })
 
-local Section = Tab1:CreateSection("Other Stuff")
+local Section = Tab1:CreateSection("Checking Whitelist")
+
+
+local Label = Tab1:CreateLabel("Most Recent Whitelisted Player Here!")
+
+local Button = Tab1:CreateButton({
+    Name = "Check Recent Player Added ",
+    Callback = function()
+        for k, v in pairs(Configs.whitelist) do 
+            if v.Name ~= lp.Name then 
+                Label:Set(v)
+            end
+        end
+    end,
+ })
+
+
+
+
+
+
+local Section = Tab1:CreateSection("Other Things!")
 
  local Button = Tab1:CreateButton({
     Name = "Destroy Gui",
@@ -356,7 +363,23 @@ local Input = Tab:CreateInput({
     Callback = function(bool)
      getgenv().ToggleTargetKill = bool
      if bool then
+        if not table.find(Configs.whitelist,ChosenKillPlayer) then 
         TargetKill(ChosenKillPlayer)
+     else
+        Rayfield:Notify({
+            Title = "Error Occured...",
+            Content = "You cannot kill this player, as they are whitelisted.",
+            Duration = 1,
+            Image = 4483362458,
+            Actions = {
+               Ignore = {
+                  Name = "Okay!",
+                  Callback = function()
+               end
+            },
+         },
+         })
+        end
      end
     end,
  })
@@ -380,7 +403,7 @@ local Slider = Tab:CreateSlider({
     Range = {0, 30},
     Increment = 5,
     Suffix = "",
-    CurrentValue = 25,
+    CurrentValue = 0,
     Callback = function(Value)
         AuraRange = Value
         return AuraRange
@@ -519,9 +542,9 @@ local Input = Tab9:CreateInput({
     end,
  })
 
- local Section = Tab8:CreateSection("Teams")
+ local Section = Tab9:CreateSection("Teams")
 
- local Button = Tab8:CreateButton({
+ local Button = Tab9:CreateButton({
     Name = "Become Criminal",
     Callback = function()
         BecomeCriminal()
