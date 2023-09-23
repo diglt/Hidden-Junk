@@ -1,3 +1,4 @@
+
 local Configs = {
     whitelist = {},
 }
@@ -10,9 +11,15 @@ getgenv().ToggleArrest = false
 getgenv().ToggleTargetKill = false
 getgenv().ToggleGodMode = false
 getgenv().ProtectPresident = false
+getgenv().ToggleSilent = false
 
 
 local cloneref = cloneref or function(obj) return obj end
+local MetaTable = getrawmetatable(game)
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local closestPlayer
+local camera = game.Workspace.CurrentCamera
 local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
 local Teams = cloneref(game:GetService("Teams"))
 local Workspace = cloneref(game:GetService("Workspace"))
@@ -21,9 +28,7 @@ local lp = cloneref(Players.LocalPlayer)
 local DmgRemote = ReplicatedStorage.meleeEvent
 local CallingRemoteFolder = cloneref(Workspace:WaitForChild("Remote"))
 local ArrestRemote = cloneref(CallingRemoteFolder:WaitForChild("arrest"))  
-local TeamRemote = cloneref(CallingRemoteFolder:WaitForChild("TeamEvent"))
-local CarSpawnRemote = cloneref(CallingRemoteFolder:WaitForChild("ItemHandler"))
-local ClientItemHandler = cloneref(lp:WaitForChild("PlayerScripts"):WaitForChild("ClientItemHandler"))
+local ShootEvent = game:GetService("ReplicatedStorage"):WaitForChild("ShootEvent")
 
 
 table.insert(Configs.whitelist,lp.Name)
@@ -97,6 +102,93 @@ local function Clip()
     end
 end
 
+local function ModGunNoDmg()
+    for i,v in next, getgc(true) do 
+        if typeof(v) == "table" then 
+            if rawget(v, "MaxAmmo") then 
+                rawset(v, "MaxAmmo", math.huge)
+                rawset(v, "ReloadTime", 0.1)
+                rawset(v, "Range", math.huge)
+            end
+        end
+    end
+end
+
+local function ModGunSpam()
+    for i,v in next, getgc(true) do 
+        if typeof(v) == "table" then 
+            if rawget(v, "MaxAmmo") then 
+                rawset(v, "MaxAmmo", math.huge)
+                rawset(v, "ReloadTime", 0.1)
+                rawset(v, "Range", math.huge)
+                rawset(v, "AutoFire", true)
+            end
+        end
+    end
+end
+
+local function MagCheck(point1, point2)
+    return (point1 - point2).Magnitude
+end
+
+local function isOnScreen(part)
+    local vector, onScreen = camera:WorldToScreenPoint(part.Position)
+    return onScreen
+end
+
+local runserv = game:GetService("RunService")
+
+local function findClosestPlayerOnScreen()
+    closestPlayer = nil
+    local closestDistance = math.huge 
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            local character = otherPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local humanoidRootPart = character.HumanoidRootPart
+                if isOnScreen(humanoidRootPart) then
+                    local playerPosition = humanoidRootPart.Position
+                    local distance = MagCheck(playerPosition, mouse.Hit.p)
+                    if distance < closestDistance then
+                        closestPlayer = otherPlayer
+                        closestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+    return closestPlayer
+end
+
+
+local function EnableSilent()
+
+    runserv.RenderStepped:Connect(function()
+        findClosestPlayerOnScreen()
+    end)
+
+    setreadonly(MetaTable, false)
+
+    local oldmt = MetaTable.__namecall
+
+    MetaTable.__namecall = newcclosure(function(Self,...)
+        local method = getnamecallmethod()
+        local Args = {...}
+
+        if typeof(Self) == "Instance" and Self == ShootEvent and method == "FireServer" then 
+            for i,v in next, Args[1] do 
+                v.Hit = closestPlayer.Character.Head
+                v.CFrame = closestPlayer.Character.Head.CFrame
+                v.Distance = 0.1
+            end
+            return oldmt(Self, unpack(Args))
+        end
+        return oldmt(Self,...)
+    end)
+
+    setreadonly(MetaTable,true)
+end
+
 local function TargetKill(Target)
     while ToggleTargetKill do 
             for _,v in pairs(Players:GetPlayers()) do 
@@ -110,6 +202,7 @@ local function TargetKill(Target)
                     local TargetRoot = getroot(v)
                     local TargetHumanoid = gethumanoid(v)
                     local TargetChar = getchar(v)
+
                     if not TargetChar:FindFirstChildWhichIsA("ForceField") and IsAlive(TargetHumanoid) and IsValidMember(LpRoot) and IsAlive(LpHuman) then
                         repeat
                                 LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,3)
@@ -129,9 +222,9 @@ local function TargetTeleport(Target)
             for _,v in pairs(Players:GetPlayers()) do 
                 if v.Name == Target then 
                 local GuyToTeleport = v 
-                local LpRoot = getroot(lp)
-                local LpHuman = gethumanoid(lp)
                 local TargetRoot = getroot(GuyToTeleport)
+
+                local LpRoot = getroot(lp)
                 if IsValidMember(LpRoot) and IsValidMember(TargetRoot) then 
             LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,2,0)
             end
@@ -147,7 +240,6 @@ local function PresidentTargetTeleport(Target)
                 if IsAlive(gethumanoid(lp)) and IsValidMember(getchar(v)) then 
                     local GuyToTeleport = v 
                     local LpRoot = getroot(lp)
-                    local LpHuman = gethumanoid(lp)
                     local TargetRoot = getroot(GuyToTeleport)
                     if IsValidMember(LpRoot) and IsValidMember(TargetRoot) then 
                     LpRoot.CFrame = TargetRoot.CFrame + Vector3.new(0,0,3)
@@ -178,22 +270,21 @@ end
 local function KillAll()
     while getgenv().ToggleKill do
     for char,Humanoid in GetHumanoids() do
+
         for _,v in pairs(Players:GetPlayers()) do
             if v.Character == char and v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist,v.Name) then
                 local Target = v
                     if IsValidMember(char) and IsAlive(Humanoid) and not char:FindFirstChildWhichIsA("ForceField") then
-                    local lpchar = getchar()
+                    local lpchar = getchar(lp)
                     local lphuman = gethumanoid(lp)
-                    local InvalidMember = false
                     local PlayerRoot = getroot(char)
-                    local lpRoot = getroot()
+                    local lpRoot = getroot(lp)
                     repeat
                     if IsValidMember(lpchar) and IsValidMember(lpRoot) and IsAlive(lphuman) then
                         lpRoot.CFrame = PlayerRoot.CFrame - Vector3.new(0,5,0)
                         DmgRemote:FireServer(Target)
                         task.wait()
                         elseif not IsValidMember(lpchar) or not IsAlive(lphuman) or not getgenv().ToggleKill then
-                        InvalidMember = true
                             break
                                 end
                             until not IsAlive(Humanoid) or not getgenv().ToggleKill
@@ -354,11 +445,6 @@ local Button = Tab1:CreateButton({
         end
     end,
  })
-
-
-
-
-
 
 local Section = Tab1:CreateSection("Other Things!")
 
@@ -533,7 +619,35 @@ local Input = Tab:CreateInput({
      end
     end,
  })
+
+ local Section = Tab:CreateSection("Guns / Auto Headshot")
+
+ local Button = Tab:CreateButton({
+    Name = "Mod All Gun (Renable If Die) ",
+    Callback = function()
+        ModGunNoDmg()
+    end,
+ })
+
+ local Button = Tab:CreateButton({
+    Name = "Mod Gun, Spam Bullets",
+    Callback = function()
+        ModGunSam()
+    end,
+ })
  
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Headshot",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleSilent = bool
+     if bool then
+        EnableSilent()
+     end
+    end,
+ })
+ 
+
  local Section = Tab9:CreateSection("Main")
 
 
