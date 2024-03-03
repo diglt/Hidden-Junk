@@ -194,7 +194,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Neural Hub",
-    LoadingTitle = "FE Non Skidded 2023 Epik!!11!1",
+    LoadingTitle = "",
     LoadingSubtitle = "by Neural",
     ConfigurationSaving = {
        Enabled = true,
@@ -207,21 +207,6 @@ local Window = Rayfield:CreateWindow({
        RememberJoins = true 
     },
  })
-
-
- Rayfield:Notify({
-   Title = "Hey there",
-   Content = "Enjoy the script, join the discord if you wish to see more.",
-   Duration = 3,
-   Image = 4483362458,
-   Actions = {
-      Ignore = {
-         Name = "Okay!",
-         Callback = function()
-      end
-   },
-},
-})
 
  local Creator = "neural"
  local Tab = Window:CreateTab("Main",4483362458)
