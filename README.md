@@ -2,5 +2,4 @@
 
 ### Languages
 <img align="center" alt="Java" width="30px" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" />
-<img align="center" alt="Java" width="30px" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" />
-<img align="center" alt="Java" width="30px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/HTML5_logo_and_wordmark.svg/130px-HTML5_logo_and_wordmark.svg.png" />
+<img align="center" alt="Java" width="30px" src="![image](https://github.com/user-attachments/assets/76fde3de-d21b-47fc-8f08-c492f4264734)" />
