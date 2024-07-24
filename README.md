@@ -1,1 +1,11 @@
-**Hello! I'm digit, however i also go by neural, i'm a script developer in lua/luau and currently broadening my knowledge in python. To send me a message, add me at n.eural on discord :)** 
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>
+      <strong>
+        Here is where all my luau scripts are. 
+      All my code is my own and the UI library is from rayfield.
+    </strong>
+    </h1>
+</body>
+</html>
