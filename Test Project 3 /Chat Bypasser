@@ -82,7 +82,6 @@ TextBox.FocusLost:Connect(function()
 	local finaltext = "?" .. TextBox.Text
 	local ft2 = string.split(finaltext, "?")
 	local PlayerWords = string.upper(ft2[2])
-	print(PlayerWords)
 
 	local bypassedWord = ""
 	local result = {}
