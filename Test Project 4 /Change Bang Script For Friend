@@ -1,3 +1,6 @@
+-- THIS IS NOT MY SCRIPT, THIS IS FROM INFINITE YIELDS BANG COMMAND. I DO NOT TAKE ANY OWNERSHIP AND THIS WAS REQUESTED BY A FRIEND. I DO NOT USE THIS CODE FOR ANY OF MY OWN SCRIPTS.
+
+
 local speed = 6
 local Players = game:GetService("Players")
 local Plr2Bang = Players:FindFirstChild("gb_synapse")
