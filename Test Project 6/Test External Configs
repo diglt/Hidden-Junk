@@ -1,7 +1,5 @@
 print("script ran")
 
-local Configs = Configs
-
 if table.find(Configs, "a") then 
     print("hello!!")
 else
