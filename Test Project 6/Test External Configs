@@ -1,13 +1,7 @@
 print("script ran")
 
-if a then 
-    print("Hello")
+if table.find(Configs, "a") then 
+    print("hello!!")
 else
-    print("no"
-end
-
-if b then 
-    print("You called b >:(")
-else
-    print("no x2")
+    print("Found Not!")
 end
