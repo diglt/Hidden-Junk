@@ -1,5 +1,7 @@
 print("script ran")
 
+task.wait(1)
+
 if table.find(Configs, "a") then 
     print("hello!!")
 else
