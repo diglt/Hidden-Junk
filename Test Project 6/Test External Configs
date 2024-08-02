@@ -1,7 +1,11 @@
 if a then 
     print("Hello")
+else
+    print("no"
 end
 
 if b then 
     print("You called b >:(")
+else
+    print("no x2")
 end
