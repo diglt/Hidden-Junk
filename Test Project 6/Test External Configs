@@ -1,0 +1,7 @@
+if a then 
+    print("Hello")
+end
+
+if b then 
+    print("You called b >:(")
+end
