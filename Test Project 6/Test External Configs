@@ -2,7 +2,7 @@ print("script ran")
 
 task.wait(1)
 
-if Configs[a] then 
+if getgenv().Configs["a"] then 
     print("hello!!")
 else
     print("Found Not!")
