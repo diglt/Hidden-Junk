@@ -1,591 +1,728 @@
--- Toggles -- 
 
-getgenv().GiftClaim = false
-getgenv().SpinWheel = false 
-getgenv().HandToggle = false
-getgenv().BicepToggle = false 
-getgenv().ClaimSeason = false 
-getgenv().EnableFight = false 
-getgenv().AllowBestPets = false 
-getgenv().KnuckleToggle = false 
-getgenv().EnableRebirths = false 
-getgenv().EnableEggOpens = false 
-getgenv().EnableAutoPotion = false
-getgenv().EnableCrateRolling = false  
-
-
--- Locals -- 
-local RequiredScriptCode = 022104
-local lp = game.Players.LocalPlayer
-local char = lp.Character
-local PlayerRoot = char:FindFirstChild("HumanoidRootPart")
-local PetFolderLocation = game:GetService("Workspace").PetFolder
-
--- Simplified -- 
-
-local RedeemCodeRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.CodeRedemptionService.RE.onRedeem
-local BarbellRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ToolService.RE.onEquipRequest
-local CrateOpenRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ArmsService.RF.RollAllCratesForPlayer
-local AllowEggOpenRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.EggService.RF.purchaseEgg
-local BestPetEquipRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.PetService.RF.equipBest
-local RebirthRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.RebirthService.RE.onRebirthRequest
-local ClickRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ToolService.RE.onClick
-local BicepChangeWeightRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ToolService.RE.onGuiEquipRequest
-local HandChangeWeightRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ToolService.RE.onGuiEquipRequest
-local ChangeTierRemote = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.PunchBagService.RE.onGiveStats
-local SpinRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.SpinService.RE.onSpinRequest
-local ClaimSeasonRequest = game:GetService("ReplicatedStorage").Communication.Functions[""]
-local FightSelectNPC = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ArmWrestleService.RE.onEnterNPCTable
-local FightClickRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ArmWrestleService.RE.onClickRequest
-local PotionRequest = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.BoostService.RE.useBoost
-
-
--- Tables -- 
-
-local TieredPositionsW1 = {
-    ["Tier1"] = Vector3.new(-10227, 5, 114),
-    ["Tier2"] = Vector3.new(-10227, 5, 124),
-    ["Tier3"] = Vector3.new(-10227, 5, 129),
-    ["Tier4"] = Vector3.new(-10235, 5, 128),
-    ["Tier5"] = Vector3.new(-10244, 5, 128),
-    ["Tier6"] = Vector3.new(-10254, 5, 129),
+local Configs = {
+    whitelist = {},
 }
 
-local TieredPositionsW2 = {
-    ["Tier1"] = Vector3.new(-10331, 5, 621),
-    ["Tier2"] = Vector3.new(-10331, 5, 613),
-    ["Tier3"] = Vector3.new(-10331, 5, 604),
-    ["Tier4"] = Vector3.new(-10331, 5, 594),
-    ["Tier5"] = Vector3.new(-10331, 5, 584),
-    ["Tier6"] = Vector3.new(-10331, 5, 574),
-}
+getgenv().ToggleEsp = false
+getgenv().ToggleNoclip = false
+getgenv().ToggleKill = false
+getgenv().ToggleAura = false
+getgenv().ToggleArrest = false
+getgenv().ToggleTargetKill = false
+getgenv().ToggleGodMode = false
+getgenv().ProtectPresident = false
+getgenv().ToggleSilent = false
 
-local TieredPositionsW3 = {
-    ["Tier1"] = Vector3.new(11563, 10, 126),
-    ["Tier2"] = Vector3.new(11560, 10, 118),
-    ["Tier3"] = Vector3.new(11560, 10, 109),
-    ["Tier4"] = Vector3.new(11558, 10, 101),
-    ["Tier5"] = Vector3.new(11557, 10, 92),
-    ["Tier6"] = Vector3.new(11555, 10, 83),
-}
 
-local TieredPositionsW4 = {
-    ["Tier1"] = Vector3.new(-10360, 6, -889),
-    ["Tier2"] = Vector3.new(-10354, 6, -895),
-    ["Tier3"] = Vector3.new(-10347, 6, -899),
-    ["Tier4"] = Vector3.new(-10341, 6, -904),
-    ["Tier5"] = Vector3.new(11557, 10, 92),
-    ["Tier6"] = Vector3.new(11555, 10, 83),
-}
+local cloneref = cloneref or function(obj) return obj end
+local MetaTable = getrawmetatable(game)
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local closestPlayer
+local camera = game.Workspace.CurrentCamera
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+local Teams = cloneref(game:GetService("Teams"))
+local Workspace = cloneref(game:GetService("Workspace"))
+local Players = cloneref(game:GetService("Players"))
+local lp = cloneref(Players.LocalPlayer)
+local DmgRemote = ReplicatedStorage.meleeEvent
+local CallingRemoteFolder = cloneref(Workspace:WaitForChild("Remote"))
+local ArrestRemote = cloneref(CallingRemoteFolder:WaitForChild("arrest"))  
+local ShootEvent = game:GetService("ReplicatedStorage"):WaitForChild("ShootEvent")
 
--- Functions -- 
 
-function RedeemAllCodes()
-    spawn(function()
-        RedeemCodeRequest:FireServer("noob")
-        RedeemCodeRequest:FireServer("noob")
-        RedeemCodeRequest:FireServer("noob")
-        RedeemCodeRequest:FireServer("noob")
-    end)
+table.insert(Configs.whitelist,lp.Name)
+
+local function getchar(plr)
+    return (plr or lp).Character
 end
 
 
+local function gethumanoid(plr)
+    local char = plr and plr:IsA("Model") and plr or getchar(plr)
+    return (char and char:FindFirstChildWhichIsA("Humanoid")),char
+end
+
+local function getroot(plr)
+    local char = plr and plr:IsA("Model") and plr or getchar(plr)
+    return (char and char:FindFirstChild("HumanoidRootPart")),char
+end
 
 
+local function IsValidMember(obj,target)
+    return obj:IsDescendantOf(target or game)
+end
 
-function IncreaseBicepStrength()
-    spawn(function() 
-        while getgenv().BicepToggle == true do
-             ClickRequest:FireServer()
+
+local function IsAlive(Humanoid)
+    return Humanoid and (IsValidMember(Humanoid) and Humanoid.Health > 0)
+end
+
+local function DenySeating()
+    for i,v in pairs(Workspace:GetDescendants()) do 
+        if v:IsA("Seat") then 
+            v:Destroy()
+        end
+    end
+end
+
+
+local function GetHumanoids()
+    local Humanoids = {}
+    for i,v in Players:GetPlayers() do
+        if not table.find(Configs.whitelist,v.Name) then 
+            local Humanoid,char = gethumanoid(v)
+            if IsAlive(Humanoid) then 
+                Humanoids[char] = Humanoid
+            end
+        end
+    end
+    return Humanoids
+end
+
+
+local function NoClip()
+    while ToggleNoclip do
+    local char = getchar(lp)
+        for i,child in pairs(char:GetChildren()) do
+                if child:IsA("Part") then 
+            child.CanCollide = false
+            end
+        end
         task.wait()
-        end
-    end)
-end
-
-
-function IncreaseHandStrength()
-    spawn(function()
-        while getgenv().HandToggle == true do 
-            ClickRequest:FireServer()
-            task.wait()
-        end
-    end)
-end
-
-
-function RunGift()
-    for i = 0,12 do
-        local NewNumb = i + 1 
-        if NewNumb > 12 then break end 
-        local args = {[1] = NewNumb}
-    game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.TimedRewardService.RE.onClaim:FireServer(unpack(args))
     end
 end
 
-function ClaimGifts()
-    spawn(function()
-        while getgenv().GiftClaim == true do 
-                RunGift()
-            task.wait(60)
+local function Clip()
+    local char = getchar(lp)
+        for i,child in pairs(char:GetChildren()) do
+                if child:IsA("Part") then 
+            child.CanCollide = true
         end
-    end)
-end
-
-
-function AutoSpinWheel()
-    spawn(function()
-        while SpinWheel == true do
-            SpinRequest:FireServer()
-            task.wait(5)
-        end
-    end)
-end
-
-function RunSeason()
-    for i = 0,12 do
-        local NewNumb = i + 1 
-        if NewNumb > 20 then break end 
-        ClaimSeasonRequest:InvokeServer(NewNumb,"Main")
     end
 end
 
-function AutoClaimSeason()
-    spawn(function()
-        while getgenv().ClaimSeason == true do 
-                RunSeason()
-            task.wait(60)
+local function ModGunNoDmg()
+    for i,v in next, getgc(true) do 
+        if typeof(v) == "table" then 
+            if rawget(v, "MaxAmmo") then 
+                rawset(v, "MaxAmmo", math.huge)
+                rawset(v, "ReloadTime", 0.1)
+                rawset(v, "Range", math.huge)
+            end
         end
-    end)
+    end
 end
 
-function AutoRebirth()
-    spawn(function()
-        while EnableRebirths == true do
-            RebirthRequest:FireServer()
-            task.wait(1)
+local function ModGunSpam()
+    for i,v in next, getgc(true) do 
+        if typeof(v) == "table" then 
+            if rawget(v, "MaxAmmo") then 
+                rawset(v, "MaxAmmo", math.huge)
+                rawset(v, "ReloadTime", 0.1)
+                rawset(v, "Range", math.huge)
+                rawset(v, "AutoFire", true)
+            end
         end
-    end)
+    end
+end
+
+local function MagCheck(point1, point2)
+    return (point1 - point2).Magnitude
+end
+
+local function isOnScreen(part)
+    local vector, onScreen = camera:WorldToScreenPoint(part.Position)
+    return onScreen
+end
+
+local runserv = game:GetService("RunService")
+
+local function findClosestPlayerOnScreen()
+    closestPlayer = nil
+    local closestDistance = math.huge 
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            local character = otherPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local humanoidRootPart = character.HumanoidRootPart
+                if isOnScreen(humanoidRootPart) then
+                    local playerPosition = humanoidRootPart.Position
+                    local distance = MagCheck(playerPosition, mouse.Hit.p)
+                    if distance < closestDistance then
+                        closestPlayer = otherPlayer
+                        closestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+    return closestPlayer
 end
 
 
-function EquipBestPets()
-    spawn(function()
-        while AllowBestPets == true do
-            BestPetEquipRequest:InvokeServer(game:GetService("Players").LocalPlayer)
-            task.wait(2)
-        end
+local function EnableSilent()
+
+    runserv.RenderStepped:Connect(function()
+        findClosestPlayerOnScreen()
     end)
+
+    setreadonly(MetaTable, false)
+
+    local oldmt = MetaTable.__namecall
+
+    MetaTable.__namecall = newcclosure(function(Self,...)
+        local method = getnamecallmethod()
+        local Args = {...}
+
+        if typeof(Self) == "Instance" and Self == ShootEvent and method == "FireServer" then 
+            for i,v in next, Args[1] do 
+                v.Hit = closestPlayer.Character.Head
+                v.CFrame = closestPlayer.Character.Head.CFrame
+                v.Distance = 0.1
+            end
+            return oldmt(Self, unpack(Args))
+        end
+        return oldmt(Self,...)
+    end)
+
+    setreadonly(MetaTable,true)
 end
 
-function AutoOpenAllCrate()
-    spawn(function()
-        while EnableCrateRolling == true do
-            CrateOpenRequest:InvokeServer()
-            task.wait()
+local function TargetKill(Target)
+    while ToggleTargetKill do 
+            for _,v in pairs(Players:GetPlayers()) do 
+                if v.Name == Target and not table.find(Configs.whitelist, v.name) then 
+                    local GuyToKill = v 
+
+                    local LpRoot = getroot(lp)
+                    local OldCFrame = LpRoot.CFrame 
+                    local LpHuman = gethumanoid(lp)
+
+                    local TargetRoot = getroot(v)
+                    local TargetHumanoid = gethumanoid(v)
+                    local TargetChar = getchar(v)
+
+                    if not TargetChar:FindFirstChildWhichIsA("ForceField") and IsAlive(TargetHumanoid) and IsValidMember(LpRoot) and IsAlive(LpHuman) then
+                        repeat
+                                LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,3)
+                                DmgRemote:FireServer(GuyToKill) 
+                                task.wait()
+                        until not IsAlive(TargetHumanoid) or not ToggleTargetKill
+                    LpRoot.CFrame = OldCFrame
+                else
+                end
+            end
         end
-    end)
+        task.wait()
+    end
 end
 
--- Library -- 
+local function TargetTeleport(Target)
+            for _,v in pairs(Players:GetPlayers()) do 
+                if v.Name == Target then 
+                local GuyToTeleport = v 
+                local TargetRoot = getroot(GuyToTeleport)
+
+                local LpRoot = getroot(lp)
+                if IsValidMember(LpRoot) and IsValidMember(TargetRoot) then 
+            LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,2,0)
+            end
+        end
+        task.wait()
+    end
+end
+
+local function PresidentTargetTeleport(Target)
+    while ProtectPresident do 
+        for _,v in pairs(Players:GetPlayers()) do 
+            if v.Name == Target then  
+                if IsAlive(gethumanoid(lp)) and IsValidMember(getchar(v)) then 
+                    local GuyToTeleport = v 
+                    local LpRoot = getroot(lp)
+                    local TargetRoot = getroot(GuyToTeleport)
+                    if IsValidMember(LpRoot) and IsValidMember(TargetRoot) then 
+                    LpRoot.CFrame = TargetRoot.CFrame + Vector3.new(0,0,3)
+                wait()
+                else
+                    break
+                end
+            end
+        end
+    end
+    wait(0.1)
+    end
+    local ToNumberPresident = tonumber(Target)
+    table.remove(Configs.whitelist,ToNumberPresident)
+end
+
+local function BecomeCriminal()
+    if IsValidMember(getchar(lp)) and IsAlive(gethumanoid(lp)) then  
+        local LpRoot = getroot(lp)
+        local LpHumanoid = gethumanoid(lp)
+        local OldCFrame = LpRoot.CFrame
+        LpRoot.CFrame = CFrame.new(-975, 109, 2062)
+        task.wait()
+        LpRoot.CFrame = OldCFrame
+    end
+end
+
+local function KillAll()
+    while getgenv().ToggleKill do
+    for char,Humanoid in GetHumanoids() do
+
+        for _,v in pairs(Players:GetPlayers()) do
+            if v.Character == char and v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist,v.Name) then
+                local Target = v
+                    if IsValidMember(char) and IsAlive(Humanoid) and not char:FindFirstChildWhichIsA("ForceField") then
+                    local lpchar = getchar(lp)
+                    local lphuman = gethumanoid(lp)
+                    local PlayerRoot = getroot(char)
+                    local lpRoot = getroot(lp)
+                    repeat
+                    if IsValidMember(lpchar) and IsValidMember(lpRoot) and IsAlive(lphuman) then
+                        lpRoot.CFrame = PlayerRoot.CFrame - Vector3.new(0,5,0)
+                        DmgRemote:FireServer(Target)
+                        task.wait()
+                        elseif not IsValidMember(lpchar) or not IsAlive(lphuman) or not getgenv().ToggleKill then
+                            break
+                                end
+                            until not IsAlive(Humanoid) or not getgenv().ToggleKill
+                        end
+                    end
+                end
+            end
+    task.wait()
+    end
+end
 
 
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+local function Esp()
+    local Highlights = {} 
 
+    while ToggleEsp do 
+        for _, player in pairs(Players:GetPlayers()) do 
+            if not table.find(Configs.whitelist, player.Name) then
+                local VChar = getchar(player)
+                local VHumanoid = gethumanoid(player)
+                if IsAlive(VHumanoid) then 
+                    local Highlight = Highlights[player] -- Add Players Highlight To Table
+                    if not Highlight then -- If The Player Doesn't Have A Highlight Then 
+                        Highlight = cloneref(Instance.new("Highlight"))
+                        Highlight.Name = player.Name
+                        Highlight.FillTransparency = 0.5
+                        Highlight.OutlineColor = Color3.new(0, 0, 0)
+                        Highlight.OutlineTransparency = 0.5
+                        Highlight.Parent = VChar
+                        Highlights[player] = Highlight  -- Set The Player In Table To A Highlight
+                    else
+                        Highlight.Parent = VChar
+                    end
+                    if player.Team then
+                        local teamName = player.Team.Name
+                        if teamName == "Guards" then
+                            Highlight.FillColor = Color3.new(0, 0, 1) -- Blue for Guards
+                        elseif teamName == "Inmates" then
+                            Highlight.FillColor = Color3.new(1, 0.5, 0) -- Orange for Inmates
+                        elseif teamName == "Criminals" then
+                            Highlight.FillColor = Color3.new(1, 0, 1) -- Pink for Criminals
+                        end
+                    end
+                else
+                    local Highlight = Highlights[player]
+                    if Highlight then
+                        Highlight:Destroy()
+                        Highlights[player] = nil
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end
+
+local function FindEsp()
+    for i,v in pairs(Players:GetPlayers()) do 
+        local Vchar = getchar(v)
+        for i,Highlight in Vchar:GetDescendants() do 
+            if Highlight:IsA("Highlight") then 
+                Highlight:Destroy()
+            end
+        end
+    end
+end
+
+
+
+local function AutoArrest()
+    while ToggleArrest do
+        if IsValidMember(getchar(lp)) then 
+            for _,v in pairs(Players:GetPlayers()) do 
+                if  v.Team ~= Teams:FindFirstChild("Neutral") and not table.find(Configs.whitelist, v.name) then 
+                    local PotTarget = v 
+                    if PotTarget.Team == Teams:FindFirstChild("Criminals") and PotTarget.Name ~= lp.Name then 
+                        if IsValidMember(getchar(lp)) and IsAlive(gethumanoid(lp)) and IsValidMember(getchar(v)) and IsAlive(gethumanoid(v)) then 
+                        local TargetRoot = getroot(PotTarget)
+                        local LpRoot = getroot(lp) 
+                        repeat 
+                                LpRoot.CFrame = TargetRoot.CFrame - Vector3.new(0,0,5)
+                                ArrestRemote:InvokeServer(TargetRoot)
+                                task.wait()
+                        until PotTarget.Team ~= Teams:FindFirstChild("Criminals") or not ToggleArrest
+                    else
+                        wait()
+                        end
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end
+
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Neural Hub",
-    LoadingTitle = "FE Non Skidded 2023 Epik!!11!1",
-    LoadingSubtitle = "by Neural",
+    LoadingTitle = "Goodnight punpun",
+    LoadingSubtitle = "by diglt",
     ConfigurationSaving = {
-       Enabled = true,
+       Enabled = false,
        FolderName = nil, 
        FileName = "Neural Hub"
     },
     Discord = {
        Enabled = true,
-       Invite = "wk2xtM8H", 
+       Invite = "3M4PkmNgTw",
        RememberJoins = true 
     },
  })
 
+ local Tab = Window:CreateTab("Aggressive Feautres",4483362458)
+ local Tab9 = Window:CreateTab("Non Aggressive Feautres",4483362458)
+ local Tab1 = Window:CreateTab("Other",4483362458) 
 
+ local Section = Tab1:CreateSection("Whitelist Features")
 
- Rayfield:Notify({
-   Title = "Hey there",
-   Content = "Enjoy the script, join the discord if you wish to see more.",
-   Duration = 3,
-   Image = 4483362458,
-   Actions = {
-      Ignore = {
-         Name = "Okay!",
-         Callback = function()
-      end
-   },
-},
+ local ChosenWhitelist
+ local Input = Tab1:CreateInput({
+     Name = "Add Player To Global Whitelist",
+     PlaceholderText = "...",
+     RemoveTextAfterFocusLost = false,
+     Callback = function(Text)
+        ChosenWhitelist = Text
+        table.insert(Configs.whitelist,ChosenWhitelist)
+        print(ChosenWhitelist)
+     end,
+  })
+ 
+  local ChosenRemoveWhitelist
+  local Input = Tab1:CreateInput({
+   Name = "Remove Player From Global Whitelist",
+   PlaceholderText = "...",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+    ChosenRemoveWhitelist = Text
+    local ToNumbWhitelist = tonumber(ChosenRemoveWhitelist)
+    print(ChosenRemoveWhitelist)
+      table.remove(Configs.whitelist,ToNumbWhitelist)
+   end,
 })
 
- local Creator = "neural"
- local Tab = Window:CreateTab("Main",4483362458)
- local Tab2 = Window:CreateTab("Eggs And Pets",4483362458)
- local Tab1 = Window:CreateTab("Other Features",4483362458)
- local Tab999 = Window:CreateTab("Settings",4483362458) 
+local Section = Tab1:CreateSection("Checking Whitelist")
 
 
+local Label = Tab1:CreateLabel("Most Recent Whitelisted Player Here!")
 
-local Section = Tab2:CreateSection("Eggs")
-
-local selectedEggToOpen
-local Dropdown = Tab2:CreateDropdown({
-    Name = "Choose Egg To Open",
-    Options = {"Limited","Earth","Icy","Lava","Blackhole","Crystal","Molten","Solar","Moon","Ice","Burning","Coconut","Palm","Treasure","Clam","KingFish","Poseidon","Rust","Widget","Atom","Iridescent","Mutant","Nuclear","TRex","Herbivore","Pterodactyl","Mystic","DinoFossil","Gem"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedEggToOpen = value[1]
-        AllowEggOpenRequest:InvokeServer(selectedEggToOpen,{})
-    end,
-})
-
-local Section = Tab2:CreateSection("Pets")
-
-function AutoPets()
-    spawn(function()
-        while EnableEggOpens == true do
-            AllowEggOpenRequest:InvokeServer(selectedEggToOpen,{})
-            task.wait()
+local Button = Tab1:CreateButton({
+    Name = "Check Recent Player Added ",
+    Callback = function()
+        for k, v in pairs(Configs.whitelist) do 
+            if v.Name ~= lp.Name then 
+                Label:Set(v)
+            end
         end
-    end)
-end
+    end,
+ })
 
+local Section = Tab1:CreateSection("Other Things!")
 
-local Toggle = Tab2:CreateToggle({
-   Name = "Auto Open Selected Egg",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().EnableEggOpens = bool
-    if bool then
-        AutoPets()
-    end
-   end,
-})
-
-local Toggle = Tab2:CreateToggle({
-   Name = "Auto Equip Best Pet",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().AllowBestPets = bool
-    if bool then
-        EquipBestPets()
-    end
-   end,
-})
-
-
- local Section = Tab999:CreateSection("Hey!")
-
- local Button = Tab999:CreateButton({
+ local Button = Tab1:CreateButton({
     Name = "Destroy Gui",
     Callback = function()
         Rayfield:Destroy()
     end,
  })
 
-
- local Section = Tab999:CreateSection("I have an issue!")
- 
- local Button = Tab999:CreateButton({
-   Name = "Dm n.eural for issues on discord.",
-   Callback = function()
-   end,
-})
-
- local Section = Tab999:CreateSection("Who Made This?")
-
-local Paragraph = Tab999:CreateParagraph({Title = "Credits", Content = "n.eural - Script Maker And Owner."})
+ local Paragraph = Tab1:CreateParagraph({Title = "Credits to:", Content = "Neural - Script Creator"})
 
 
- local Section = Tab1:CreateSection("Other Features")
+ local Section = Tab:CreateSection("Main Features")
 
-local Toggle = Tab1:CreateToggle({
-   Name = "Auto Claim Gifts",
+local Toggle = Tab:CreateToggle({
+   Name = "Auto Kill All",
    CurrentValue = false,
    Callback = function(bool)
-    getgenv().GiftClaim = bool
+    getgenv().ToggleKill = bool
     if bool then
-        ClaimGifts()
+        KillAll()
     end
    end,
 })
 
-local Toggle = Tab1:CreateToggle({
-   Name = "Auto Spin Wheel",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().SpinWheel = bool
-    if bool then
-        AutoSpinWheel()
-    end
-   end,
-})
-
-local MYNAME = neural
-
-local selectedPotion
-local Dropdown = Tab1:CreateDropdown({
-    Name = "Select Potion",
-    Options = {"Void","Golden","Luck","Wins"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedPotion = value[1]
-        return selectedPotion
+local ChosenKillPlayer 
+local Input = Tab:CreateInput({
+    Name = "Player Name To Kill",
+    PlaceholderText = "...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        ChosenKillPlayer = Text
+        return ChosenKillPlayer
     end,
-})
+ })
 
-function UsePotion()
-    spawn(function()
-        while EnableAutoPotion == true do
-            PotionRequest:FireServer(selectedPotion)
-            wait(0.1)
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Kill Chosen Player",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleTargetKill = bool
+     if bool then
+        if not table.find(Configs.whitelist,ChosenKillPlayer) then 
+        TargetKill(ChosenKillPlayer)
+     else
+        Rayfield:Notify({
+            Title = "Error Occured...",
+            Content = "You cannot kill this player, as they are whitelisted.",
+            Duration = 1,
+            Image = 4483362458,
+            Actions = {
+               Ignore = {
+                  Name = "Okay!",
+                  Callback = function()
+               end
+            },
+         },
+         })
         end
-    end)
+     end
+    end,
+ })
+
+local Toggle = Tab:CreateToggle({
+    Name = "Auto Arrest Criminals",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleArrest = bool
+     if bool then
+         AutoArrest()
+     end
+    end,
+ })
+
+local Section = Tab:CreateSection("Kill Aura")
+
+local AuraRange
+local Slider = Tab:CreateSlider({
+    Name = "Set Aura Range",
+    Range = {0, 30},
+    Increment = 5,
+    Suffix = "",
+    CurrentValue = 0,
+    Callback = function(Value)
+        AuraRange = Value
+        return AuraRange
+    end,
+ })
+
+local function ShowAuraRadius()
+    if not IsValidMember(getchar(lp)) then 
+        return
+    end 
+    local Humanoid = gethumanoid(lp)
+    local char = getchar(lp)
+    local RadiusPart = cloneref(Instance.new("Part"))
+    RadiusPart.Size = Vector3.new(AuraRange, 0, AuraRange)
+    RadiusPart.Transparency = 0.5
+    RadiusPart.Anchored = true
+    RadiusPart.CanCollide = false
+    RadiusPart.BrickColor = BrickColor.new("Bright red")
+    RadiusPart.Parent = cloneref(game:GetService("Workspace"))
+    local yOffset = -2.5
+    local LpRoot = getroot(lp)
+    if IsValidMember(char) and IsAlive(Humanoid) and IsValidMember(LpRoot) then
+        local CharacterPosition = LpRoot.Position
+        RadiusPart.Position = Vector3.new(CharacterPosition.X, CharacterPosition.Y + yOffset, CharacterPosition.Z)
+        wait()
+    end
+    RadiusPart:Destroy()
 end
 
-local Toggle = Tab1:CreateToggle({
-   Name = "Auto Use Potion",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().EnableAutoPotion = bool
-    if bool then
-        UsePotion()
-    end
-   end,
-})
-
-
-local Section = Tab:CreateSection("Select Your World")
-
-local selectedWorld
-local Dropdown = Tab:CreateDropdown({
-    Name = "Select Which World",
-    Options = {"1","2","3","4","5"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedWorld = value[1]
-        print(selectedWorld)
-        return selectedWorld
-    end,
-})
-
-function GoToSelectWorld()
-    spawn(function()
-        if tonumber(selectedWorld) == 1 then 
-            PlayerRoot.CFrame = CFrame.new(-10277, 4, 61)
-            elseif tonumber(selectedWorld) == 2 then 
-                PlayerRoot.CFrame = CFrame.new(-10281, 4, 606)
-                elseif tonumber(selectedWorld) == 3 then 
-                    PlayerRoot.CFrame = CFrame.new(11635, 9, 90)
-                elseif tonumber(selectedWorld) == 4 then 
-                    PlayerRoot.CFrame = CFrame.new(-10310, 4, -861)
-            elseif tonumber(selectedWorld) == 5 then 
-            PlayerRoot.CFrame = CFrame.new(-10261, -4, -1422)
+local function KillAura()
+    while ToggleAura do
+        ShowAuraRadius()
+        if IsValidMember(getchar(lp)) then 
+            local LpHuman = gethumanoid(lp)
+            local ChosenDist = AuraRange
+            if IsAlive(LpHuman) then 
+                local DmgRemote = ReplicatedStorage.meleeEvent
+                for i,v in pairs(Players:GetPlayers()) do 
+                    if IsValidMember(v) and not table.find(Configs.whitelist,v.Name) then 
+                        local Target = v
+                        local VRoot = getroot(v)
+                        local LRoot = getroot(lp)
+                        local VHuman = gethumanoid(v)
+                        if IsAlive(LpHuman) and IsAlive(VHuman) then 
+                            local DistBetween = (LRoot.Position - VRoot.Position).Magnitude
+                            if DistBetween <= ChosenDist then
+                                DmgRemote:FireServer(Target)
+                            end
+                        end
+                    end
+                end
+            end
         end
-    end)
+        task.wait()
+    end
 end
 
+local Toggle = Tab:CreateToggle({
+    Name = "Visible Kill Aura",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleAura = bool
+     if bool then
+         KillAura()
+     end
+    end,
+ })
+
+ local ChosenMrPresident 
+local Input = Tab:CreateInput({
+    Name = "Player To Protect!",
+    PlaceholderText = "...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        ChosenMrPresident = Text
+        table.insert(Configs.whitelist,ChosenMrPresident)
+        return ChosenMrPresident
+    end,
+ })
+
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Protect Player (Use With Aura)!",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ProtectPresident = bool
+     if bool then
+        PresidentTargetTeleport(ChosenMrPresident)
+     end
+    end,
+ })
+
+ local Section = Tab:CreateSection("Guns / Auto Headshot")
 
  local Button = Tab:CreateButton({
-   Name = "Teleport To Selected World.",
-   Callback = function()
-        GoToSelectWorld()
-   end,
-})
-
-local Paragraph = Tab:CreateParagraph({Title = "Notice For Worlds!", Content = "Please select your CURRENT world, if you don't THINGS WILL NOT ENABLE."})
-
-local Section = Tab:CreateSection("Biceps")
-
-local selectedBiBarbell
-local Dropdown = Tab:CreateDropdown({
-    Name = "Choose Barbell To Use",
-    Options = {"Tier1","Tier2","Tier3","Tier4","Tier5","Tier6","Tier7","Tier8","Tier9","Tier10","Tier11","Tier12"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedBiBarbell = value[1]
-        BarbellRequest:FireServer(selectedWorld, "Barbells", selectedBiBarbell)
+    Name = "Mod All Gun (Renable If Die) ",
+    Callback = function()
+        ModGunNoDmg()
     end,
-})
+ })
 
-
-local selectedBiWeight
-local Dropdown = Tab:CreateDropdown({
-    Name = "Choose Bicep Weight To Use",
-    Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","400Kg","500Kg","650Kg","800Kg","1000Kg","1500Kg","2000Kg","2500Kg","3000Kg","3500Kg","4000Kg","5000Kg","6000Kg","7500Kg","10000Kg","125000Kg","150000Kg","200000Kg","250000Kg","300000Kg","350000Kg","400000Kg","450000Kg","500000Kg","600000Kg","700000Kg","800000Kg","900000Kg","1000000Kg","1250000Kg","1500000Kg","1750000Kg","2000000Kg","2500000Kg","3000000Kg"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedBiWeight = value[1]
-        BicepChangeWeightRequest:FireServer(selectedWorld, "Dumbells", selectedBiWeight)
+ local Button = Tab:CreateButton({
+    Name = "Mod Gun, Spam Bullets",
+    Callback = function()
+        ModGunSam()
     end,
-})
-
-local Toggle = Tab:CreateToggle({
-   Name = "Train Biceps",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().BicepToggle = bool
-    if bool then
-        IncreaseBicepStrength()
-    end
-   end,
-})
-
-local Section = Tab:CreateSection("Hands")
-
-local selectedHaWeight
-local Dropdown = Tab:CreateDropdown({
-    Name = "Choose Hand Weight To Use",
-    Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","350Kg","400Kg","450Kg","500Kg","600Kg","700Kg","800Kg","900Kg","1000Kg","1250Kg","1500Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg","50000Kg","60000Kg","70000Kg","80000Kg","90000Kg","100000Kg","125000Kg","150000Kg","175000Kg","200000Kg","250000Kg","300000Kg","350000Kg","375000Kg","400000Kg","425000Kg","450000Kg","475000Kg","500000Kg","525000Kg","550000Kg","575000Kg","600000Kg","625000Kg"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedHaWeight = value[1]
-        HandChangeWeightRequest:FireServer(selectedWorld, "Grips", selectedHaWeight)
+ })
+ 
+ local Toggle = Tab:CreateToggle({
+    Name = "Auto Headshot",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleSilent = bool
+     if bool then
+        EnableSilent()
+     end
     end,
-})
+ })
+ 
+
+ local Section = Tab9:CreateSection("Main")
 
 
-local Toggle = Tab:CreateToggle({
-   Name = "Train Hand Strength",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().HandToggle = bool
-    if bool then
-        IncreaseHandStrength()
-    end
-   end,
-})
-
-local Section = Tab:CreateSection("Knuckles")
-
-local KnWeightPOS
-local selectedKnWeight
-local Dropdown = Tab:CreateDropdown({
-    Name = "Choose Knuckle Tier To Use",
-    Options = {"Tier1","Tier2","Tier3","Tier4","Tier5","Tier6"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedKnWeight = value[1]
-            ChangeTierRemote:FireServer(selectedWorld, selectedKnWeight)
-        return selectedHaWeight, KnWeightPOS
+local Toggle = Tab9:CreateToggle({
+    Name = "Teamed Esp",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleEsp = bool
+     if bool then
+         Esp()
+     end
     end,
-})
+ })
 
-function ChangeWorlds()
-    spawn(function()
-        if tonumber(selectedWorld) == 1 then
-        KnWeightPOS = TieredPositionsW1[selectedKnWeight]
-            elseif tonumber(selectedWorld) == 2 then 
-            KnWeightPOS = TieredPositionsW2[selectedKnWeight]
-            elseif tonumber(selectedWorld) == 3 then 
-                KnWeightPOS = TieredPositionsW3[selectedKnWeight]
-            elseif tonumber(selectedWorld) == 4 then 
-                KnWeightPOS = TieredPositionsW4[selectedKnWeight]
-        end
-    end)
-end
-
-
-
-function IncreaseKnuckleStrength()
-    spawn(function()
-        while getgenv().KnuckleToggle == true do 
-            ChangeTierRemote:FireServer(selectedWorld, selectedKnWeight)
-            task.wait()
-        end
-    end)
-end
-
-function TeleportToTier()
-    spawn(function()
-        PlayerRoot.CFrame = CFrame.new(KnWeightPOS)
-        wait()
-    end)
-end
-
-
-local Toggle = Tab:CreateToggle({
-   Name = "Train Knuckle Strength",
-   CurrentValue = false,
-   Callback = function(bool)
-    ChangeWorlds()
-    TeleportToTier()
-    getgenv().KnuckleToggle = bool
-    if bool then
-        IncreaseKnuckleStrength()
-    end
-   end,
-})
-
-local Section = Tab:CreateSection("Challenge")
-
-local selectedNPCToFight
-local Dropdown = Tab:CreateDropdown({
-    Name = "Choose NPC To Fight",
-    Options = {"Bully","Teacher","GymRat","MafiaBoss","Champion","ScrapTrader","CyberCop","SlicerAssassin","RipperDoc","RogueAi","CocoNut","FatPirate","MermaidKing","FriendlyShark","KrakenBoss","Barbarian","Hazmat","Enforcer","Bulk","MutantKing","Primal","Dino","Archeologist","TribeLeader","Mammoth"},
-    CurrentOption = "--",
-    Callback = function(value)
-        selectedNPCToFight = value[1]
-        FightSelectNPC:FireServer(selectedNPCToFight, workspace.Zones[selectedWorld].Interactables.ArmWrestling.NPC[selectedNPCToFight],selectedWorld)
+ local Toggle = Tab9:CreateToggle({
+    Name = "Auto Noclip",
+    CurrentValue = false,
+    Callback = function(bool)
+     getgenv().ToggleNoclip = bool
+     if bool then
+         NoClip()
+     else
+        Clip()
+     end
     end,
-})
-
-function AutoFightNPC()
-    spawn(function()
-        while getgenv().EnableFight == true do 
-            FightSelectNPC:FireServer(selectedNPCToFight, workspace.Zones[selectedWorld].Interactables.ArmWrestling.NPC[selectedNPCToFight],selectedWorld)
-            FightClickRequest:FireServer()
-            task.wait()
-        end
-    end)
-end
+ })
 
 
-
-local Toggle = Tab:CreateToggle({
-   Name = "Auto Fight The NPC",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().EnableFight = bool
-    if bool then
-        AutoFightNPC()
-    end
-   end,
-})
-
-local Section = Tab:CreateSection("Rebirths")
-
-local Toggle = Tab:CreateToggle({
-   Name = "Auto Rebirth",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().EnableRebirths = bool
-    if bool then
-        AutoRebirth()
-    end
-   end,
-})
-
-local Section = Tab:CreateSection("Crates")
-
-local Toggle = Tab:CreateToggle({
-   Name = "Auto Roll All Crates",
-   CurrentValue = false,
-   Callback = function(bool)
-    getgenv().EnableCrateRolling = bool
-    if bool then
-        AutoOpenAllCrate()
-    end
-   end,
-})
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                while Creator ~= "neural" do
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        SpinRequest:FireServer("!>!>!>!>!>!>!>!")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                end
+ local Button = Tab9:CreateButton({
+    Name = "Remove Esp",
+    Callback = function()
+        FindEsp()
+    end,
+ })
 
 
+ local Section = Tab9:CreateSection("Player Based")
+
+ local Slider = Tab9:CreateSlider({
+    Name = "Set Walkspeed",
+    Range = {0, 500},
+    Increment = 10,
+    Suffix = "",
+    CurrentValue = 50,
+    Callback = function(Value)
+        local LpHuman = gethumanoid(lp)
+        LpHuman.WalkSpeed = Value
+    end,
+ })
+
+ local ChosenTeleportPlayer 
+local Input = Tab9:CreateInput({
+    Name = "Player Name To Teleport",
+    PlaceholderText = "...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        ChosenTeleportPlayer = Text
+        return ChosenTeleportPlayer
+    end,
+ })
+
+ local Button = Tab9:CreateButton({
+    Name = "Teleport To Selected Player",
+    Callback = function()
+        TargetTeleport(ChosenTeleportPlayer)
+    end,
+ })
+
+ local Section = Tab9:CreateSection("Teams")
+
+ local Button = Tab9:CreateButton({
+    Name = "Become Criminal",
+    Callback = function()
+        BecomeCriminal()
+    end,
+ })
+
+ DenySeating()
