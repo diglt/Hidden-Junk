@@ -1,5 +1,6 @@
--- Gui to Lua
--- Version: 3.2
+-- TY digit for making all ur own code wow! (even tho ur script is mega shit balls)
+
+
 local StoredArgs = {}
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -373,7 +374,6 @@ task.spawn(function()
 end)
 
 
-
 while task.wait() do
     for i,v in pairs(MainFrame:GetDescendants()) do 
         if v:IsA("TextButton") then 
@@ -384,15 +384,15 @@ while task.wait() do
                     local Index = "[" .. tostring(a) .. "] = "
 
                     if type(b) == "string" then 
-                        streng = streng .. Index .. b .. "\n"
+                        streng = streng .. Index .. "\"" .. b .. "\"\n"  -- Adding quotes around strings
                     elseif type(b) == "boolean" then
                         local val 
                         if b == true then val = "true" end
                         if b == false then val = "false" end 
 
-                        streng = streng .. Index .. "" .. val .. "" .. "\n"
+                        streng = streng .. Index .. val .. "\n"
                     elseif type(b) == "number" then
-                        streng = streng .. Index .. "" .. tostring(b) .. "" .. "\n"
+                        streng = streng .. Index .. tostring(b) .. "\n"
                     end
                 end
 
@@ -406,6 +406,7 @@ while task.wait() do
             end)
         end
     end
+
 
     local OpenedRemoteFrame = ColouredFrame:FindFirstChild("OpenedRemoteFrame")
 
