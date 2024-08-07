@@ -1,3 +1,10 @@
+local Radius = 150
+-- the circle radius of ur FOV or the size of the circle whatever u wanna call it :P --
+
+
+
+
+
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -13,7 +20,6 @@ end
 
 local lp = Players.LocalPlayer
 local Mouse = lp:GetMouse() or game.Players.LocalPlayer:GetMouse()
-local Radius = 150
 local Enabled = false
 
 local FOV = Drawing.new("Circle")
