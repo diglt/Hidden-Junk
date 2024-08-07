@@ -1,4 +1,4 @@
-local Radius = 150
+local Radius = getgenv().Settings["Radius"]
 -- the circle radius of ur FOV or the size of the circle whatever u wanna call it :P --
 
 
