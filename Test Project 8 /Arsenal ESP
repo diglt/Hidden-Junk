@@ -51,6 +51,7 @@ function HSVToRGB(h, s, v)
     return r * 255, g * 255, b * 255
 end
 
+
 local function CreateEsp(player)
     if player.Team ~= lp.Team then 
         local boxOutline = Drawing.new("Square")
@@ -92,7 +93,7 @@ local function CreateEsp(player)
         local Line = Drawing.new("Line")
         Line.Visible = true
         Line.Transparency = 0.75
-        Line.Thickness = 1
+        Line.Thickness = 2
         Line.Color = Color3.new(1,0,0)
 
 
