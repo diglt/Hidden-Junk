@@ -1,9 +1,17 @@
+local IsRainbow = true 
+-- decide if u want rainbow or not --
+
+
+
+
+
+
+
+
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
-local RANGE = 200
-local IsRainbow = true
 
 function GetChar(playor)
     return playor.Character
