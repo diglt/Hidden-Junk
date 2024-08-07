@@ -30,7 +30,6 @@ end
 local hue = 0
 local speed = 0.25 -- Adjust this value to control the speed of the color change
 
--- yes this is skidded from gpt i apologise profusely, i mean unelss ur a mathmetician who can explain it to me please understand why i did so.
 function HSVToRGB(h, s, v)
     local r, g, b
     local i = math.floor(h * 6)
