@@ -1,10 +1,4 @@
 local IsRainbow = getgenv().Settings["IsRainbow"]
-local Boxes = getgenv().Settings["Boxes"]
-local Tracers = getgenv().Settings["Tracers"]
-local StudDistance = getgenv().Settings["StudDistance"]
-local PlayerNames = getgenv().Settings["PlayerNames"]
-local PlaceboHealth = getgenv().Settings["PlaceboHealth"]
-
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
@@ -27,9 +21,11 @@ function GetHumanoid(char)
     return char:FindFirstChildOfClass("Humanoid")
 end
 
+
 local hue = 0
 local speed = 0.25 -- Adjust this value to control the speed of the color change
 
+-- i skidmit it, this is from GPT :( i just can't wrap my head around math and that's ALL i generated i promise bros D:
 function HSVToRGB(h, s, v)
     local r, g, b
     local i = math.floor(h * 6)
@@ -57,52 +53,47 @@ end
 
 local function CreateEsp(player)
     if player.Team ~= lp.Team then 
-        if Boxes then 
-            local boxOutline = Drawing.new("Square")
-            boxOutline.Visible = true
-            boxOutline.Filled = false
-            boxOutline.Thickness = 1.5
+        local boxOutline = Drawing.new("Square")
+        boxOutline.Visible = true
+        boxOutline.Filled = false
+        boxOutline.Thickness = 1.5
 
-            local box = Drawing.new("Square")
-            box.Visible = true
-            box.Filled = false
-            box.Thickness = 1.5
-            box.Color = Color3.new(0,0,0)
+        local box = Drawing.new("Square")
+        box.Visible = true
+        box.Filled = false
+        box.Thickness = 1.5
+        box.Color = Color3.new(0,0,0)
 
-        if PlaceboHealth then 
-            local HealthDisplay = Drawing.new("Line")
-            HealthDisplay.Visible = true
-            HealthDisplay.Transparency = 0.75
-            HealthDisplay.Thickness = 1
-            HealthDisplay.Color = Color3.new(0, 1, 0)
+        local HealthDisplay = Drawing.new("Line")
+        HealthDisplay.Visible = true
+        HealthDisplay.Transparency = 0.75
+        HealthDisplay.Thickness = 1
+        HealthDisplay.Color = Color3.new(0, 1, 0)
 
-        if PlayerNames then 
-            local TextLabel = Drawing.new("Text")
-            TextLabel.Visible = true
-            TextLabel.Transparency = 1
-            TextLabel.Color3 = Color3.new(1,1,1)
+        local TextLabel = Drawing.new("Text")
+        TextLabel.Visible = true
+        TextLabel.Transparency = 1
+        TextLabel.Color3 = Color3.new(1,1,1)
 
-            local PlayerName = tostring(player.Name)
-            TextLabel.Text = PlayerName
-            TextLabel.Outline = true
-            TextLabel.OutlineColor = Color3.new(0,0,0)
-            TextLabel.Center = true
+        local PlayerName = tostring(player.Name)
+        TextLabel.Text = PlayerName
+        TextLabel.Outline = true
+        TextLabel.OutlineColor = Color3.new(0,0,0)
+        TextLabel.Center = true
 
-        if StudDistance then 
-            local StudLabel = Drawing.new("Text")
-            StudLabel.Visible = true
-            StudLabel.Transparency = 1
-            StudLabel.Color3 = Color3.new(1,1,1)
-            StudLabel.Outline = true
-            StudLabel.OutlineColor = Color3.new(0,0,0)
-            StudLabel.Center = true
+        local StudLabel = Drawing.new("Text")
+        StudLabel.Visible = true
+        StudLabel.Transparency = 1
+        StudLabel.Color3 = Color3.new(1,1,1)
+        StudLabel.Outline = true
+        StudLabel.OutlineColor = Color3.new(0,0,0)
+        StudLabel.Center = true
 
-        if Tracers then 
-            local Line = Drawing.new("Line")
-            Line.Visible = true
-            Line.Transparency = 0.75
-            Line.Thickness = 1
-            Line.Color = Color3.new(1,0,0)
+        local Line = Drawing.new("Line")
+        Line.Visible = true
+        Line.Transparency = 0.75
+        Line.Thickness = 1
+        Line.Color = Color3.new(1,0,0)
 
 
         local function UpdatePosition()
@@ -126,7 +117,6 @@ local function CreateEsp(player)
                 local Root = GetRoot(char)
                 local MyRoot = GetRoot(Mychar)
                 local Head = GetHead(char)
-                local Humanoid = GetHumanoid(char)
 
                 if Root and Head then 
                     local ROOTPOS, ONSCREEN = Camera:WorldToViewportPoint(Root.Position)
@@ -204,12 +194,6 @@ local function CreateEsp(player)
         end)
     end
 end
-end
-end
-end
-end
-end
-
 
 
 for _, plr in Players:GetPlayers() do 
