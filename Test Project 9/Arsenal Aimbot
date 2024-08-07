@@ -1,9 +1,47 @@
+-- Hello there curious scripter, i of course don't expect you here but atlas what can i do when i release something publically.
+-- The reason this script is Unobfuscated is to allow for compatibility for executors who cannot run obfuscated scripts.
+-- The full unobfuscated code is below, not because i want it to be but because it has to be. I would very much appericiate if you atleast ask for permission from on discord to use my code.
+-- Otherwise if you're here to browse go ahead! Look to your hearts content and hopefully learn something new :)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local Radius = getgenv().Settings["Radius"]
--- the circle radius of ur FOV or the size of the circle whatever u wanna call it :P --
-
-
-
-
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
