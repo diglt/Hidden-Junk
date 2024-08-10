@@ -100,13 +100,13 @@ local function CreateEsp(player)
 
         local function UpdatePosition()
             if IsRainbow then 
-                local r, g, b = HSVToRGB(hue, 1, 1) -- Full saturation and value for bright colors
+                local r, g, b = HSVToRGB(hue, 1, 1) 
                 boxOutline.Color = Color3.fromRGB(r, g, b)
                 Line.Color = Color3.fromRGB(r, g, b)
                     
-                hue = hue + speed * task.wait() -- Increment hue based on speed and elapsed time
+                hue = hue + speed * task.wait() 
                 if hue >= 1 then
-                    hue = 0 -- Reset hue to loop the colors
+                    hue = 0 
                 end
             else
                 boxOutline.Color = Color3.new(1, 0, 0)
