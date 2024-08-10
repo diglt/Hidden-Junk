@@ -24,9 +24,9 @@ end
 
 
 local hue = 0
-local speed = 0.25 -- Adjust this value to control the speed of the color change
+local speed = 0.25 
 
--- i skidmit it, this is from GPT :( i just can't wrap my head around math and that's ALL i generated i promise bros D:
+
 function HSVToRGB(h, s, v)
     local r, g, b
     local i = math.floor(h * 6)
