@@ -1,5 +1,6 @@
 local IsRainbow = getgenv().Settings["IsRainbow"]
 
+local IsRainbow = true
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
@@ -52,9 +53,7 @@ function HSVToRGB(h, s, v)
     return r * 255, g * 255, b * 255
 end
 
-
 local function CreateEsp(player)
-    if player.Team ~= lp.Team then 
         local boxOutline = Drawing.new("Square")
         boxOutline.Visible = true
         boxOutline.Filled = false
@@ -181,31 +180,48 @@ local function CreateEsp(player)
             end
         end
 
-        local BoxRunning = RunService.RenderStepped:Connect(UpdatePosition)
+    local BoxRunning = RunService.RenderStepped:Connect(UpdatePosition)
 
-        player.AncestryChanged:Connect(function()
-            if not player:IsDescendantOf(Players) then 
-                BoxRunning:Disconnect()
-                boxOutline:Destroy()
-                box:Destroy()
-                TextLabel:Destroy()
-                StudLabel:Destroy()
-                Line:Destroy()
-                HealthDisplay:Destroy()
-            end
-        end)
+    player.AncestryChanged:Connect(function()
+        if not player:IsDescendantOf(Players) then 
+            BoxRunning:Disconnect()
+            boxOutline:Destroy()
+            box:Destroy()
+            TextLabel:Destroy()
+            StudLabel:Destroy()
+            Line:Destroy()
+            HealthDisplay:Destroy()
+        end
+    end)
+
+    if player.Team then 
+        player:GetPropertyChangedSignal("Team"):Connect(function()
+        warn("Player: " .. tostring(player) .. " has switched Teams!")
+        boxOutline:Destroy()
+        box:Destroy()
+        TextLabel:Destroy()
+        StudLabel:Destroy()
+        Line:Destroy()
+        HealthDisplay:Destroy()
+        end)    
+    else
+        return
     end
 end
 
 
 for _, plr in Players:GetPlayers() do 
-    if plr ~= lp and plr.Team ~= lp.Team then 
+    if plr ~= lp and plr.Team and plr.Team ~= lp.Team then 
+        CreateEsp(plr)
+    elseif plr ~= lp and not plr.Team then
         CreateEsp(plr)
     end
 end
 
 Players.PlayerAdded:Connect(function(player)
-    if player ~= lp and player.Team ~= lp then 
+    if player ~= lp and player.Team and player.Team ~= lp.Team then 
+        CreateEsp(plr)
+    elseif player ~= lp and not player.Team then
         CreateEsp(player)
     end
 end)
