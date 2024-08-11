@@ -16,6 +16,7 @@ end
 
 local lp = Players.LocalPlayer
 local Mouse = lp:GetMouse() or game.Players.LocalPlayer:GetMouse()
+local Radius = 150
 local Enabled = false
 
 local FOV = Drawing.new("Circle")
@@ -45,10 +46,6 @@ function GetHead(char)
     return char:FindFirstChild("Head")
 end
 
-
-
-local frameCounter = 0
-local raycastInterval = 5 
 
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
@@ -122,27 +119,9 @@ end)
 RunService.RenderStepped:Connect(function()
     if Enabled then
         if HasTeams then 
-            local closestPlayer = FindClosestPlayer()
-            local Check = CheckTeam(closestPlayer)
+        local closestPlayer = FindClosestPlayer()
+        local Check = CheckTeam(closestPlayer)
             if Check then 
-                frameCounter = frameCounter + 1
-                if frameCounter >= raycastInterval and closestPlayer then
-                    frameCounter = 0 
-                    if IsVisible(closestPlayer) then
-                        local char = GetChar(closestPlayer)
-                        local head = GetHead(char)
-                        if head then
-                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                        end
-                    end
-                end
-            end
-        else
-            local closestPlayer = FindClosestPlayer()
-
-            frameCounter = frameCounter + 1
-            if frameCounter >= raycastInterval and closestPlayer then
-                frameCounter = 0 
                 if IsVisible(closestPlayer) then
                     local char = GetChar(closestPlayer)
                     local head = GetHead(char)
@@ -151,8 +130,20 @@ RunService.RenderStepped:Connect(function()
                     end
                 end
             end
+        else
+            local closestPlayer = FindClosestPlayer()
+
+                if IsVisible(closestPlayer) then
+                    local char = GetChar(closestPlayer)
+                    local head = GetHead(char)
+
+                    if head then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                end
+            end
         end
     end
 end)
+
 
 
