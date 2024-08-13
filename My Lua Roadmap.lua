@@ -1,6 +1,4 @@
 -- THINGS I WANT TO LEARN / HAVE LEARNT IN LUA (13/08/24) --
--- MY CURRENT "UNC KNOWLEDGE %" IS 70% --
-
 
 local a = {
    ["Drawing Library"] = {
@@ -97,6 +95,8 @@ local a = {
  
    ["Instances"] = {
      ["fireclickdetector"] = true,
+     ["fireproximityprompt"] = true,
+     ["firetouchinterest"] = true,
      ["getcallbackvalue"] = false,
      ["getconnections"] = false,
      ["getcustomasset"] = false,
