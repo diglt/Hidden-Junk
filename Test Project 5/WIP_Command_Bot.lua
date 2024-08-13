@@ -159,10 +159,8 @@ TextChatService.MessageReceived:Connect(function(textChatMessage)
 
         if string.find(Text, "!help") and not string.find(Text, "!remind") then 
             local CommandToExplain = string.gsub(Text, "!help ", "")
-            print(CommandToExplain)
 
             local CmdInTable = ExplanationTable[CommandToExplain]
-            print(CmdInTable)
             TextChannel:SendAsync(CmdInTable)
         end
 
