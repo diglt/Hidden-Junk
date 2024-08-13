@@ -220,7 +220,7 @@ end
 
 Players.PlayerAdded:Connect(function(player)
     if player ~= lp and player.Team and player.Team ~= lp.Team then 
-        CreateEsp(plr)
+        CreateEsp(player)
     elseif player ~= lp and not player.Team then
         CreateEsp(player)
     end
