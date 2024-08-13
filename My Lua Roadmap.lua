@@ -1,4 +1,6 @@
 -- THINGS I WANT TO LEARN / HAVE LEARNT IN LUA (13/08/24) --
+-- MY CURRENT "UNC KNOWLEDGE %" IS 70% --
+
 
 local a = {
    ["Drawing Library"] = {
