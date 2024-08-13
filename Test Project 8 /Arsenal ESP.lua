@@ -196,13 +196,17 @@ local function CreateEsp(player)
 
     if player.Team then 
         player:GetPropertyChangedSignal("Team"):Connect(function()
-        warn("Player: " .. tostring(player) .. " has switched Teams!")
-        boxOutline:Destroy()
-        box:Destroy()
-        TextLabel:Destroy()
-        StudLabel:Destroy()
-        Line:Destroy()
-        HealthDisplay:Destroy()
+            warn("Player: " .. tostring(player) .. " has switched Teams!")
+            if player.Team ~= lp.Team then 
+                boxOutline.Visible = false
+                box.Visible = false
+                TextLabel.Visible = false
+                StudLabel.Visible = false
+                Line.Visible = false
+                HealthDisplay.Visible = false
+            else
+                return
+            end
         end)    
     else
         return
