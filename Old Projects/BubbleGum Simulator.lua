@@ -3,6 +3,9 @@ getgenv().SF = false
 getgenv().GP = false
 getgenv().ER = false
 
+-- IF UR READING THIS, THIS FUNCTION BELOW MIGHT BE THE WORST PIECE OF CODE I'VE EVER WRITTEN
+-- FORGIVE ME :(
+
 function doER()
     spawn(function()
         while ER == true do
