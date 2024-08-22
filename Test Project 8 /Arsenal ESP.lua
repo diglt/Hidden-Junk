@@ -1,7 +1,5 @@
 local IsRainbow = getgenv().Settings["IsRainbow"]
 
-local IsRainbow = true
-
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
