@@ -54,7 +54,7 @@ function KillAll()
                             [3] = 1.5,
                             [4] = wand,
                             [5] = 15,
-                            [6] = workspace:WaitForChild("rawestmetatable")
+                            [6] = workspace:WaitForChild("rawestmetatable") or workspace:WaitForChild(lp)
                         }
                         
                         if FireRemote and FireRemote:IsDescendantOf(GetCharacter(game.Players.LocalPlayer)) then 
