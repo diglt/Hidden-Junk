@@ -112,22 +112,22 @@ function FindClosestPlayer()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and Enabled ~= nil then 
-        Enabled = false
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and ScriptConfigs["Enabled"] ~= nil then 
+        ScriptConfigs["Enabled"] = false
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and Enabled ~= nil then 
-        Enabled = true
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and ScriptConfigs["Enabled"] ~= nil then 
+        ScriptConfigs["Enabled"] = true
     end
 end)
 
 
 RunService.RenderStepped:Connect(function()
-    if Enabled == nil then
+    if ScriptConfigs["Enabled"] == nil then
         task.wait(1)
-    elseif Enabled then 
+    elseif ScriptConfigs["Enabled"] then 
         if HasTeams then 
 
             if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
