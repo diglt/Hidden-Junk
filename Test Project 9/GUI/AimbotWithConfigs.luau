@@ -1,9 +1,9 @@
-local Bodypart = getgenv().Settings["Bodypart"] or "Head"
-local RadiusColour = getgenv().Settings["Colour"] or "Red"
-local Radius = getgenv().Settings["Radius"] or 100
-local Enabled = getgenv().Settings["Enabled"] or true
-local Wallcheck = getgenv().Settings["Wallcheck"] or true
-local Teamcheck = getgenv().Settings["Teamcheck"] or true
+local Bodypart = getgenv().Settings["PART_TO_KILL"] or "Head"
+local RadiusColour = getgenv().Settings["COLOUR_OF_FOV"] or "Red"
+local Radius = getgenv().Settings["FOV_RADIUS"] or 100
+local Enabled = getgenv().Settings["ENABLE_AIMBOT"] or true
+local Wallcheck = getgenv().Settings["CHOSE_WALL_CHECK"] or true
+local Teamcheck = getgenv().Settings["CHOSE_TEAM_CHECK"] or true
 
 if RadiusColour == "Red" then
     RadiusColour = Color3.new(1, 0, 0)
