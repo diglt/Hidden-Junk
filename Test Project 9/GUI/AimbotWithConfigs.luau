@@ -1,7 +1,3 @@
-for Z,H in getgenv() do 
-    rconsoleprint(Z,H)
-end
-
 local Bodypart = getgenv().Settings["PART_TO_KILL"] or "Head"
 local RadiusColour = getgenv().Settings["COLOUR_OF_FOV"] or Color3.new(1,1,1)
 local Radius = getgenv().Settings["FOV_RADIUS"] or 100
