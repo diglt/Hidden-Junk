@@ -40,7 +40,7 @@ FOVoutline.Transparency = 1
 FOVoutline.Color = Color3.new(0, 0, 0)
 FOVoutline.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 FOVoutline.Radius = FOV.Radius + 1
-FOVoutline.Visible = true
+FOVoutline.Visible = ScriptConfigs["FOV_VISIBLE"]
 FOVoutline.Thickness = 3
 
 function GetChar(plr)
