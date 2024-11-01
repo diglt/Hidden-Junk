@@ -5,7 +5,6 @@ local ScriptConfigs = {
     ["FOVisible"] = getgenv().Settings["FOV_VISIBLE"],
     ["Wallcheck"] =  getgenv().Settings["CHOSE_WALL_CHECK"],
     ["Teamcheck"] =  getgenv().Settings["CHOSE_TEAM_CHECK"],
-    ["Enabled"] = getgenv().Settings["ENABLE_AIMBOT"],
 }
 
 
@@ -112,22 +111,25 @@ function FindClosestPlayer()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and ScriptConfigs["Enabled"] ~= nil then 
-        ScriptConfigs["Enabled"] = false
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
+        getgenv().Settings["ENABLE_AIMBOT"] = false
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and ScriptConfigs["Enabled"] ~= nil then 
-        ScriptConfigs["Enabled"] = true
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
+        getgenv().Settings["ENABLE_AIMBOT"] = true
     end
 end)
 
 
 RunService.RenderStepped:Connect(function()
-    if ScriptConfigs["Enabled"] == nil then
-        task.wait(1)
-    elseif ScriptConfigs["Enabled"] then 
+    if getgenv().Settings["ENABLE_AIMBOT"] == nil then
+        repeat
+            task.wait()
+        until getgenv().Settings["ENABLE_AIMBOT"] ~= nil
+
+    elseif getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
         if HasTeams then 
 
             if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
