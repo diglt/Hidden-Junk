@@ -1,17 +1,11 @@
 local Bodypart = getgenv().Settings["PART_TO_KILL"] or "Head"
-local RadiusColour = getgenv().Settings["COLOUR_OF_FOV"] or "Red"
+local RadiusColour = getgenv().Settings["COLOUR_OF_FOV"] or Color3.new(1,1,1)
 local Radius = getgenv().Settings["FOV_RADIUS"] or 100
-local Enabled = getgenv().Settings["ENABLE_AIMBOT"] or true
 local Wallcheck = getgenv().Settings["CHOSE_WALL_CHECK"] or true
 local Teamcheck = getgenv().Settings["CHOSE_TEAM_CHECK"] or true
+local Enabled = getgenv().Settings["ENABLE_AIMBOT"] or true
 
 error("Running...")
-
-if RadiusColour == "Red" then
-    RadiusColour = Color3.new(1, 0, 0)
-else
-    RadiusColour = nil
-end
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
