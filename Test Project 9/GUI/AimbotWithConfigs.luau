@@ -1,9 +1,9 @@
-local Bodypart =  "Head"
-local RadiusColour =  Color3.new(1, 0, 0)
-local RadiusSize =  200
-local Wallcheck =  true
-local Teamcheck =  true
-local Enabled = false
+local Bodypart =  getgenv().Settings["PART_TO_KILL"]
+local RadiusColour =  getgenv().Settings["COLOUR_OF_FOV"]
+local RadiusSize =  getgenv().Settings["FOV_RADIUS"]
+local Wallcheck =  getgenv().Settings["CHOSE_WALL_CHECK"]
+local Teamcheck =  getgenv().Settings["CHOSE_TEAM_CHECK"]
+local Enabled = getgenv().Settings["ENABLE_AIMBOT"]
 
 
 local Camera = workspace.CurrentCamera
