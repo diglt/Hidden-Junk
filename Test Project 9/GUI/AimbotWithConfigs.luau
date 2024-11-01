@@ -5,6 +5,8 @@ local Enabled = getgenv().Settings["ENABLE_AIMBOT"] or true
 local Wallcheck = getgenv().Settings["CHOSE_WALL_CHECK"] or true
 local Teamcheck = getgenv().Settings["CHOSE_TEAM_CHECK"] or true
 
+error("Running...")
+
 if RadiusColour == "Red" then
     RadiusColour = Color3.new(1, 0, 0)
 else
@@ -163,5 +165,5 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-
+error("Finished!")
 
