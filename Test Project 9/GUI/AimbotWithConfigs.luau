@@ -1,5 +1,5 @@
 for Z,H in getgenv() do 
-    rconsoleprint(Z.H)
+    rconsoleprint(Z,H)
 end
 
 local Bodypart = getgenv().Settings["PART_TO_KILL"] or "Head"
