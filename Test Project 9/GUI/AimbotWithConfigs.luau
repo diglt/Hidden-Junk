@@ -1,11 +1,10 @@
-local Bodypart = getgenv().Settings["PART_TO_KILL"] or "Head"
-local RadiusColour = getgenv().Settings["COLOUR_OF_FOV"] or Color3.new(1,1,1)
-local Radius = getgenv().Settings["FOV_RADIUS"] or 100
-local Wallcheck = getgenv().Settings["CHOSE_WALL_CHECK"] or true
-local Teamcheck = getgenv().Settings["CHOSE_TEAM_CHECK"] or true
-local Enabled = getgenv().Settings["ENABLE_AIMBOT"] or true
+local Bodypart =  "Head"
+local RadiusColour =  Color3.new(1, 0, 0)
+local RadiusSize =  200
+local Wallcheck =  true
+local Teamcheck =  true
+local Enabled = false
 
-error("Running...")
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
@@ -26,9 +25,9 @@ local Mouse = lp:GetMouse() or game.Players.LocalPlayer:GetMouse()
 local FOV = Drawing.new("Circle")
 FOV.Filled = false
 FOV.Transparency = 1
-FOV.Color = Color3.new(1, 0, 0)
+FOV.Color = RadiusColour
 FOV.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-FOV.Radius = Radius
+FOV.Radius = RadiusSize
 FOV.Visible = true
 FOV.Thickness = 2.5
 
@@ -50,8 +49,6 @@ function GetHead(char)
     return char:FindFirstChild(Bodypart)
 end
 
-local frameCounter = 0
-local raycastInterval = 5 
 
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
@@ -59,7 +56,7 @@ raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
 
 function IsVisible(player)
     local char = GetChar(player)
-    if char and not Wallcheck then
+    if char then
         local head = GetHead(char)
         if head then
             local headPosition, isOnScreen = Camera:WorldToViewportPoint(head.Position)
@@ -80,7 +77,7 @@ end
 
 function CheckTeam(plr)
     if plr ~= lp then 
-        if plr and plr.Team ~= lp.Team and not Teamcheck then 
+        if plr and plr.Team ~= lp.Team then 
             return true
         end
     end
@@ -113,41 +110,41 @@ end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then 
-        Enabled = true
+        Enabled = false
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then 
-        Enabled = false
+        Enabled = true
     end
 end)
 
 
 RunService.RenderStepped:Connect(function()
-    if Enabled then
+    if Enabled then 
         if HasTeams then 
-            local closestPlayer = FindClosestPlayer()
-            local Check = CheckTeam(closestPlayer)
-            if Check then 
-                frameCounter = frameCounter + 1
-                if frameCounter >= raycastInterval and closestPlayer then
-                    frameCounter = 0 
+
+            if Wallcheck and Teamcheck then 
+                local closestPlayer = FindClosestPlayer()
+                local Check = CheckTeam(closestPlayer)
+
+                if Check then 
                     if IsVisible(closestPlayer) then
                         local char = GetChar(closestPlayer)
                         local head = GetHead(char)
+
                         if head then
                             Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
                         end
                     end
                 end
             end
-        else
-            local closestPlayer = FindClosestPlayer()
 
-            frameCounter = frameCounter + 1
-            if frameCounter >= raycastInterval and closestPlayer then
-                frameCounter = 0 
+
+            elseif Wallcheck and not Teamcheck then
+                local closestPlayer = FindClosestPlayer()
+
                 if IsVisible(closestPlayer) then
                     local char = GetChar(closestPlayer)
                     local head = GetHead(char)
@@ -156,8 +153,50 @@ RunService.RenderStepped:Connect(function()
                     end
                 end
             end
-        end
+
+
+        elseif not Wallcheck and Teamcheck then
+            local closestPlayer = FindClosestPlayer()
+            local Check = CheckTeam(closestPlayer)
+
+            if Check then 
+                local char = GetChar(closestPlayer)
+                local head = GetHead(char)
+                if head then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                end
+            end
+
+
+        elseif not Wallcheck and not Teamcheck then
+            local closestPlayer = FindClosestPlayer()
+                local char = GetChar(closestPlayer)
+                local head = GetHead(char)
+
+                if head then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                end
+
+
+        else
+            local closestPlayer = FindClosestPlayer()
+
+            if Wallcheck then 
+                if IsVisible(closestPlayer) then
+                    local char = GetChar(closestPlayer)
+                    local head = GetHead(char)
+
+                    if head then
+                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                    end
+                end
+            else
+                local char = GetChar(closestPlayer)
+                local head = GetHead(char)
+
+                if head then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                end
+            end
     end
 end)
-error("Finished!")
-
