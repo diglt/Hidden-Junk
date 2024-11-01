@@ -111,13 +111,13 @@ function FindClosestPlayer()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then 
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and Enabled ~= nil then 
         Enabled = false
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then 
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and Enabled ~= nil then 
         Enabled = true
     end
 end)
