@@ -1,9 +1,11 @@
-local Bodypart =  getgenv().Settings["PART_TO_KILL"]
-local RadiusColour =  getgenv().Settings["COLOUR_OF_FOV"]
-local RadiusSize =  getgenv().Settings["FOV_RADIUS"]
-local Wallcheck =  getgenv().Settings["CHOSE_WALL_CHECK"]
-local Teamcheck =  getgenv().Settings["CHOSE_TEAM_CHECK"]
-local Enabled = getgenv().Settings["ENABLE_AIMBOT"]
+local ScriptConfigs = {
+    ["Bodypart"] =  getgenv().Settings["PART_TO_KILL"],
+    ["RadiusColour"] =  getgenv().Settings["COLOUR_OF_FOV"],
+    ["RadiusSize"] =  getgenv().Settings["FOV_RADIUS"],
+    ["Wallcheck"] =  getgenv().Settings["CHOSE_WALL_CHECK"],
+    ["Teamcheck"] =  getgenv().Settings["CHOSE_TEAM_CHECK"],
+    ["Enabled"] = getgenv().Settings["ENABLE_AIMBOT"],
+}
 
 
 local Camera = workspace.CurrentCamera
@@ -25,9 +27,9 @@ local Mouse = lp:GetMouse() or game.Players.LocalPlayer:GetMouse()
 local FOV = Drawing.new("Circle")
 FOV.Filled = false
 FOV.Transparency = 1
-FOV.Color = RadiusColour
+FOV.Color = ScriptConfigs["RadiusColour"]
 FOV.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-FOV.Radius = RadiusSize
+FOV.Radius = ScriptConfigs["RadiusSize"]
 FOV.Visible = true
 FOV.Thickness = 2.5
 
@@ -46,7 +48,7 @@ end
 
 
 function GetHead(char)
-    return char:FindFirstChild(Bodypart)
+    return char:FindFirstChild(ScriptConfigs["Bodypart"])
 end
 
 
@@ -125,7 +127,7 @@ RunService.RenderStepped:Connect(function()
     if Enabled then 
         if HasTeams then 
 
-            if Wallcheck and Teamcheck then 
+            if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
                 local closestPlayer = FindClosestPlayer()
                 local Check = CheckTeam(closestPlayer)
 
@@ -142,7 +144,7 @@ RunService.RenderStepped:Connect(function()
             end
 
 
-            elseif Wallcheck and not Teamcheck then
+            elseif ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
                 local closestPlayer = FindClosestPlayer()
 
                 if IsVisible(closestPlayer) then
@@ -155,7 +157,7 @@ RunService.RenderStepped:Connect(function()
             end
 
 
-        elseif not Wallcheck and Teamcheck then
+        elseif not ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then
             local closestPlayer = FindClosestPlayer()
             local Check = CheckTeam(closestPlayer)
 
@@ -168,7 +170,7 @@ RunService.RenderStepped:Connect(function()
             end
 
 
-        elseif not Wallcheck and not Teamcheck then
+        elseif not ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
             local closestPlayer = FindClosestPlayer()
                 local char = GetChar(closestPlayer)
                 local head = GetHead(char)
@@ -181,7 +183,7 @@ RunService.RenderStepped:Connect(function()
         else
             local closestPlayer = FindClosestPlayer()
 
-            if Wallcheck then 
+            if ScriptConfigs["Wallcheck"] then 
                 if IsVisible(closestPlayer) then
                     local char = GetChar(closestPlayer)
                     local head = GetHead(char)
