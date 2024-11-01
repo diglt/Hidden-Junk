@@ -2,6 +2,7 @@ local ScriptConfigs = {
     ["Bodypart"] =  getgenv().Settings["PART_TO_KILL"],
     ["RadiusColour"] =  getgenv().Settings["COLOUR_OF_FOV"],
     ["RadiusSize"] =  getgenv().Settings["FOV_RADIUS"],
+    ["FOVisible"] = getgenv().Settings["FOV_VISIBLE"],
     ["Wallcheck"] =  getgenv().Settings["CHOSE_WALL_CHECK"],
     ["Teamcheck"] =  getgenv().Settings["CHOSE_TEAM_CHECK"],
     ["Enabled"] = getgenv().Settings["ENABLE_AIMBOT"],
@@ -30,7 +31,7 @@ FOV.Transparency = 1
 FOV.Color = ScriptConfigs["RadiusColour"]
 FOV.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 FOV.Radius = ScriptConfigs["RadiusSize"]
-FOV.Visible = true
+FOV.Visible = ScriptConfigs["FOVisible"]
 FOV.Thickness = 2.5
 
 local FOVoutline = Drawing.new("Circle")
