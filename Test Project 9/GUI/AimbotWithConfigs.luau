@@ -122,12 +122,14 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
     end
 end)
 
+local RenderConnection
 
-RunService.RenderStepped:Connect(function()
+RenderConnection = RunService.RenderStepped:Connect(function()
     if getgenv().Settings["ENABLE_AIMBOT"] == nil then
-        repeat
-            task.wait()
-        until getgenv().Settings["ENABLE_AIMBOT"] ~= nil
+        if RenderConnection then
+            RenderConnection:Disconnect()
+            RenderConnection = nil
+        end
 
     elseif getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
         if HasTeams then 
