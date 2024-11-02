@@ -27,8 +27,8 @@ local a = {
      ["clonefunction"] = true,
      ["getcallingscript"] = true,
      ["hookfunction"] = true,
-     ["iscclosure"] = false,
-     ["islclosure"] = false,
+     ["iscclosure"] = true,
+     ["islclosure"] = true,
      ["isexecutorclosure"] = true,
      ["loadstring"] = true,
      ["newcclosure"] = true
@@ -44,10 +44,10 @@ local a = {
    },
  
    ["Crypt"] = {
-     ["crypt.base64encode"] = false,
-     ["crypt.base64decode"] = false,
-     ["crypt.encrypt"] = false,
-     ["crypt.decrypt"] = false,
+     ["crypt.base64encode"] = true,
+     ["crypt.base64decode"] = true,
+     ["crypt.encrypt"] = true,
+     ["crypt.decrypt"] = true,
      ["crypt.generatebytes"] = false,
      ["crypt.generatekey"] = false,
      ["crypt.hash"] = false,
@@ -99,7 +99,7 @@ local a = {
      ["fireproximityprompt"] = true,
      ["firetouchinterest"] = true,
      ["getcallbackvalue"] = false,
-     ["getconnections"] = false,
+     ["getconnections"] = true,
      ["getcustomasset"] = false,
      ["gethiddenproperty"] = false,
      ["gethui"] = false,
@@ -143,7 +143,10 @@ local a = {
      ["getscripts"] = true,
      ["getsenv"] = true,
      ["getthreadidentity"] = true,
-     ["setthreadidentity"] = true
+     ["setthreadidentity"] = true,
+     ["firetouchinterest"] = true,
+     ["fireproximityprompts"] = true,
+     ["fireclickdetectors"] = true
    }
  }
  
