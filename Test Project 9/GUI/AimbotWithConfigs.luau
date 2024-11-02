@@ -5,6 +5,8 @@ local ScriptConfigs = {
     ["FOVisible"] = getgenv().Settings["FOV_VISIBLE"],
     ["Wallcheck"] =  getgenv().Settings["CHOSE_WALL_CHECK"],
     ["Teamcheck"] =  getgenv().Settings["CHOSE_TEAM_CHECK"],
+    ["Enable_Aimbot"] = getgenv().Settings["ENABLE_AIMBOT"],
+    ["Manage_Control"] = nil,
 }
 
 
@@ -112,99 +114,94 @@ end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
-        getgenv().Settings["ENABLE_AIMBOT"] = false
+        getgenv().ScriptConfigs["Manage_Control"] = true
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
     if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
-        getgenv().Settings["ENABLE_AIMBOT"] = true
+        getgenv().ScriptConfigs["Manage_Control"] = false
     end
 end)
 
-local RenderConnection
 
-RenderConnection = RunService.RenderStepped:Connect(function()
-    if getgenv().Settings["ENABLE_AIMBOT"] == nil then
-        if RenderConnection then
-            RenderConnection:Disconnect()
-            RenderConnection = nil
-        end
+RunService.RenderStepped:Connect(function()
+    if getgenv().ScriptConfigs["Enable_Aimbot"] then
+        if getgenv().ScriptConfigs["Manage_Control"] then 
+            if HasTeams then 
 
-    elseif getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
-        if HasTeams then 
+                if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
+                    local closestPlayer = FindClosestPlayer()
+                    local Check = CheckTeam(closestPlayer)
 
-            if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
-                local closestPlayer = FindClosestPlayer()
-                local Check = CheckTeam(closestPlayer)
+                    if Check then 
+                        if IsVisible(closestPlayer) then
+                            local char = GetChar(closestPlayer)
+                            local head = GetHead(char)
 
-                if Check then 
+                            if head then
+                                Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                            end
+                        end
+                    end
+                end
+
+
+                elseif ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
+                    local closestPlayer = FindClosestPlayer()
+
                     if IsVisible(closestPlayer) then
+                        local char = GetChar(closestPlayer)
+                        local head = GetHead(char)
+                        if head then
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                        end
+                    end
+                end
+
+
+                elseif not ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then
+                    local closestPlayer = FindClosestPlayer()
+                    local Check = CheckTeam(closestPlayer)
+
+                    if Check then 
+                        local char = GetChar(closestPlayer)
+                        local head = GetHead(char)
+                        if head then
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                        end
+                    end
+
+
+                elseif not ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
+                    local closestPlayer = FindClosestPlayer()
                         local char = GetChar(closestPlayer)
                         local head = GetHead(char)
 
                         if head then
                             Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
                         end
-                    end
-                end
-            end
 
 
-            elseif ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
-                local closestPlayer = FindClosestPlayer()
-
-                if IsVisible(closestPlayer) then
-                    local char = GetChar(closestPlayer)
-                    local head = GetHead(char)
-                    if head then
-                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                    end
-                end
-            end
-
-
-            elseif not ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then
-                local closestPlayer = FindClosestPlayer()
-                local Check = CheckTeam(closestPlayer)
-
-                if Check then 
-                    local char = GetChar(closestPlayer)
-                    local head = GetHead(char)
-                    if head then
-                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                    end
-                end
-
-
-            elseif not ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
-                local closestPlayer = FindClosestPlayer()
-                    local char = GetChar(closestPlayer)
-                    local head = GetHead(char)
-
-                    if head then
-                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                    end
-
-
-            else
-                local closestPlayer = FindClosestPlayer()
-
-                if ScriptConfigs["Wallcheck"] then 
-                    if IsVisible(closestPlayer) then
-                        local char = GetChar(closestPlayer)
-                        local head = GetHead(char)
-
-                        if head then
-                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                        end
-                    end
                 else
-                    local char = GetChar(closestPlayer)
-                    local head = GetHead(char)
+                    local closestPlayer = FindClosestPlayer()
 
-                    if head then
-                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                    if ScriptConfigs["Wallcheck"] then 
+                        if IsVisible(closestPlayer) then
+                            local char = GetChar(closestPlayer)
+                            local head = GetHead(char)
+
+                            if head then
+                                Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                            end
+                        end
+                    else
+                        local char = GetChar(closestPlayer)
+                        local head = GetHead(char)
+
+                        if head then
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                        end
                     end
                 end
             end
