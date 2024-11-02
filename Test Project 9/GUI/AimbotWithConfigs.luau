@@ -113,13 +113,13 @@ function FindClosestPlayer()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["Enable_Aimbot"] ~= false then 
         getgenv().ScriptConfigs["Manage_Control"] = true
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().Settings["ENABLE_AIMBOT"] ~= nil then 
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["Enable_Aimbot"] ~= false then 
         getgenv().ScriptConfigs["Manage_Control"] = false
     end
 end)
