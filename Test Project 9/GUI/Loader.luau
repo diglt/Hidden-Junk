@@ -99,7 +99,7 @@ function ClarifyLoadstringGibberish(Value)
                 getgenv().Settings["ENABLE_AIMBOT"] = true
                 getgenv().DebugSettings["HAS_RAN_LINK"] = true
 
-                loadstring(game:HttpGet("https://pastebin.com/raw/TKwn8cB1"))()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/diglt/Luau-Scripts/refs/heads/main/Test%20Project%209/GUI/AimbotWithConfigs.luau"))()
             elseif getgenv().DebugSettings["HAS_RAN_LINK"] and getgenv().Settings["ENABLE_AIMBOT"] == false then
                 getgenv().Settings["ENABLE_AIMBOT"] = true
                 getgenv().Settings["FOV_VISIBLE"] = true
