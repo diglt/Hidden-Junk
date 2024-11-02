@@ -9,6 +9,13 @@ local ScriptConfigs = {
     ["Manage_Control"] = false,
 }
 
+getgenv().ScriptConfigs = ScriptConfigs
+
+if ScriptConfigs["AimbotToggle"] == nil then
+    ScriptConfigs["AimbotToggle"] = false -- or true, as per requirement
+    print(ScriptConfigs["AimbotToggle"])
+end
+
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
@@ -113,21 +120,21 @@ function FindClosestPlayer()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["AimbotToggle"] ~= false then 
-        getgenv().ScriptConfigs["Manage_Control"] = true
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and ScriptConfigs["AimbotToggle"] ~= false then 
+        ScriptConfigs["Manage_Control"] = true
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["AimbotToggle"] ~= false then 
-        getgenv().ScriptConfigs["Manage_Control"] = false
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and ScriptConfigs["AimbotToggle"] ~= false then 
+        ScriptConfigs["Manage_Control"] = false
     end
 end)
 
 
 RunService.RenderStepped:Connect(function()
-    if getgenv().ScriptConfigs["AimbotToggle"] ~= nil and getgenv().ScriptConfigs["AimbotToggle"] == true then
-        if getgenv().ScriptConfigs["Manage_Control"] == true then 
+    if ScriptConfigs["AimbotToggle"] ~= nil and ScriptConfigs["AimbotToggle"] == true then
+        if ScriptConfigs["Manage_Control"] == true then 
             if HasTeams then 
 
                 if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
