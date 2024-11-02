@@ -1,6 +1,10 @@
 -- THINGS I WANT TO LEARN / HAVE LEARNT IN LUA (13/08/24) --
 -- AS OF 13th August 2024 I KNOW 71% OF THE EXPLOIT ENVIROMENT FUNCTIONS! -- 
 
+-- | Took a break from exploiting... |
+
+-- AS OF 1st November 2024 I KNOW 78% OF THE EXPLOIT ENVIROMENT FUNCTIONS! -- 
+
 local a = {
    ["Drawing Library"] = {
      ["Drawing.new"] = true,
