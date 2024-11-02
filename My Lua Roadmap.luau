@@ -144,9 +144,6 @@ local a = {
      ["getsenv"] = true,
      ["getthreadidentity"] = true,
      ["setthreadidentity"] = true,
-     ["firetouchinterest"] = true,
-     ["fireproximityprompts"] = true,
-     ["fireclickdetectors"] = true
    }
  }
  
