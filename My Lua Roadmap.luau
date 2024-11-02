@@ -4,6 +4,32 @@
 -- | Took a break from exploiting... |
 
 -- AS OF 1st November 2024 I KNOW 78% OF THE EXPLOIT ENVIROMENT FUNCTIONS! -- 
+--[[
+   debug.getproto
+   debug.getstack
+   debug.setstack
+   debug.getprotos
+   iscached
+   invalidate
+   gethiddenproperty
+   setscriptable
+   sethiddenproperty
+   gethui
+   getcustomasset
+   isscriptable
+   getcallbackvalue
+   getscriptclosure
+   getscripthash
+   getscriptbytecode
+   lz4compress
+   lz4decompress
+   WebSocket.connect
+   mousemoverel
+   crypt.generatebytes
+   crypt.hash
+   crypt.generatekey
+]]--
+-- THESE ARE THE MISSING 22% OF UNC I DO NOT KNOW.
 
 local a = {
    ["Drawing Library"] = {
