@@ -150,9 +150,29 @@ RunService.RenderStepped:Connect(function()
 
     if ScriptConfigs["AimbotToggle"] ~= nil and ScriptConfigs["AimbotToggle"] == true then
         if ScriptConfigs["Manage_Control"] == true then 
-            if HasTeams then 
+            if not HasTeams then 
+                local closestPlayer = FindClosestPlayer()
 
-                if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
+                if ScriptConfigs["Wallcheck"] then 
+                    if IsVisible(closestPlayer) then
+                        local char = GetChar(closestPlayer)
+                        local head = GetHead(char)
+
+                        if head then
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                        end
+                    end
+                else
+                    local char = GetChar(closestPlayer)
+                    local head = GetHead(char)
+
+                    if head then
+                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                    end
+                end
+
+            elseif HasTeams then
+                if ScriptConfigs["Wallcheck"] == true and ScriptConfigs["Teamcheck"] == true then 
                     local closestPlayer = FindClosestPlayer()
                     local Check = CheckTeam(closestPlayer)
 
@@ -169,12 +189,13 @@ RunService.RenderStepped:Connect(function()
                 end
 
 
-                elseif ScriptConfigs["Wallcheck"] and not ScriptConfigs["Teamcheck"] then
+                elseif ScriptConfigs["Wallcheck"] == true and not ScriptConfigs["Teamcheck"] then
                     local closestPlayer = FindClosestPlayer()
 
                     if IsVisible(closestPlayer) then
                         local char = GetChar(closestPlayer)
                         local head = GetHead(char)
+                        
                         if head then
                             Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
                         end
@@ -203,28 +224,6 @@ RunService.RenderStepped:Connect(function()
                         if head then
                             Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
                         end
-
-
-                else
-                    local closestPlayer = FindClosestPlayer()
-
-                    if ScriptConfigs["Wallcheck"] then 
-                        if IsVisible(closestPlayer) then
-                            local char = GetChar(closestPlayer)
-                            local head = GetHead(char)
-
-                            if head then
-                                Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                            end
-                        end
-                    else
-                        local char = GetChar(closestPlayer)
-                        local head = GetHead(char)
-
-                        if head then
-                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
-                        end
                     end
                 end
-            end
 end)
