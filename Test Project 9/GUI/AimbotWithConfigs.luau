@@ -1,12 +1,12 @@
 local ScriptConfigs = {
-    ["Bodypart"] =  getgenv().Settings["PART_TO_KILL"],
-    ["RadiusColour"] =  getgenv().Settings["COLOUR_OF_FOV"],
-    ["RadiusSize"] =  getgenv().Settings["FOV_RADIUS"],
-    ["FOVisible"] = getgenv().Settings["FOV_VISIBLE"],
-    ["Wallcheck"] =  getgenv().Settings["CHOSE_WALL_CHECK"],
-    ["Teamcheck"] =  getgenv().Settings["CHOSE_TEAM_CHECK"],
-    ["Enable_Aimbot"] = getgenv().Settings["ENABLE_AIMBOT"],
-    ["Manage_Control"] = nil,
+    ["Bodypart"] =  getgenv().Settings["PART_TO_KILL"] or "Head",
+    ["RadiusColour"] =  getgenv().Settings["COLOUR_OF_FOV"] or Color3.new(1, 0, 0),
+    ["RadiusSize"] =  getgenv().Settings["FOV_RADIUS"] or 200,
+    ["FOVisible"] = getgenv().Settings["FOV_VISIBLE"] or true,
+    ["Wallcheck"] =  getgenv().Settings["CHOSE_WALL_CHECK"] or true,
+    ["Teamcheck"] =  getgenv().Settings["CHOSE_TEAM_CHECK"] or true,
+    ["AimbotToggle"] = getgenv().Settings["ENABLE_AIMBOT"] or true,
+    ["Manage_Control"] = false,
 }
 
 
@@ -113,21 +113,21 @@ function FindClosestPlayer()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["Enable_Aimbot"] ~= false then 
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["AimbotToggle"] ~= false then 
         getgenv().ScriptConfigs["Manage_Control"] = true
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["Enable_Aimbot"] ~= false then 
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and getgenv().ScriptConfigs["AimbotToggle"] ~= false then 
         getgenv().ScriptConfigs["Manage_Control"] = false
     end
 end)
 
 
 RunService.RenderStepped:Connect(function()
-    if getgenv().ScriptConfigs["Enable_Aimbot"] then
-        if getgenv().ScriptConfigs["Manage_Control"] then 
+    if getgenv().ScriptConfigs["AimbotToggle"] ~= nil and getgenv().ScriptConfigs["AimbotToggle"] == true then
+        if getgenv().ScriptConfigs["Manage_Control"] == true then 
             if HasTeams then 
 
                 if ScriptConfigs["Wallcheck"] and ScriptConfigs["Teamcheck"] then 
