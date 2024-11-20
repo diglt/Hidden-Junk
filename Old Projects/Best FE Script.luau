@@ -1,5 +1,6 @@
 local Try, Fail = pcall(function()
-    if getgenv().getreg then table.clear(getreg()) 
+    if getgenv().getreg then 
+        table.clear(getreg()) 
     end
 end)
 
