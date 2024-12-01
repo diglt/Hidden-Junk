@@ -17,17 +17,17 @@ else
         local PathfindingService = cloneref(game:GetService("PathfindingService"))
 
         -- // variables \\ -- 
-        local enabled = env.enabled or false
-        local chat_sent = env.chat_sent or ""
-        local txtchannel = env.txtchannel or nil
-        local player_sent = env.playersent or nil
+        env.enabled = false
+        env.chat_sent = ""
+        env.txtchannel = nil
+        env.playersent = nil
         
         local recent_chat_sent = ""
         local prefix = "!"
         local cooldown = 1
 
         local localplayer = Players.LocalPlayer
-        local owner_player = tostring(localplayer)
+        local owner_player = localplayer.Name
 
         local send_msg = function(msg)
             if string.find(recent_chat_sent, "#") then 
@@ -41,6 +41,7 @@ else
 
         -- // tables \\ -- 
         local commands = {}
+        local commands_sent = {}
         local blacklisted_players = {}
         local whitelisted_players = {owner_player}
         local ran_send_owner_cmd = {}
@@ -49,15 +50,22 @@ else
         local start_time = tick()
 
         local cmd_info = {
-            ["enable"] = "BOOLVALUE: enables bot",
-            ["disable"] = "(OWNER ONLY) BOOLVALUE: disables bot",
-            ["sit"] = nil,
-            ["jump"] = nil,
-            ["freeze"] = nil,
-            ["unfreeze"] = nil,
-            ["dance"] = nil,
-            ["cmds"] = nil,
-            ["help"] = nil
+            ["enable"] = "BOOLVALUE: Enables bot",
+            ["disable"] = "(OWNER ONLY) BOOLVALUE: Disables bot",
+            ["sit"] = "Forces bot to sit!",
+            ["jump"] = "Forces bot to jump!",
+            ["freeze"] = "BOOLVALUE: Freezes bot! to unfreeze type: unfreeze",
+            ["unfreeze"] = "BOOLVALUE: Unfreezes bot! to freeze type: freeze",
+            ["dance"] = "(dance<number>) Allows you to make me dance randomly or your choice of dance!",
+            ["cmds"] = "Displays a list of commands!",
+            ["help"] = "(help <command>) Displays help about certain commands!",
+            ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
+            ["whitelist"] = "(OWNER ONLY) (whitelist <player>) Allows owner to set access to commands!",
+            ["blacklist"] = "(OWNER ONLY) (blacklist <player>) Makes the player chosen unable to access commands.",
+            ["re"] = "Respawns the character!",
+            ["credits"] = "Displays the credits of the script!",
+            ["remind"] = "Reminds players of how to execute commands!",
+            ["clearchat"] = "Clears chat!"
         }
 
         -- // function setup \\ --
@@ -78,11 +86,13 @@ else
         end
 
         local function lp_root()
-            return return_root(return_char(localplayer))
+            local char = return_char(localplayer)
+            return return_root(char)
         end
 
         local function lp_hum()
-            return return_humanoid(return_char(localplayer))
+            local char = return_char(localplayer)
+            return return_humanoid(char)
         end
 
         local function is_not_null(testing_item, target)
@@ -99,13 +109,17 @@ else
         end
 
         addcmd("enable", function()
-            env.enabled = true
-            send_msg("Successfully enabled commands!")
+            if not env.enabled then 
+                enabled = true
+                send_msg("Successfully enabled commands!")
+            else
+                send_msg("Already Enabled!")
+            end
         end)
 
         addcmd("disable", function()
             if player_sent == owner_player then 
-                env.enabled = false
+                enabled = false
                 send_msg("Successfully disabled commands!")
             end
         end)
@@ -126,7 +140,7 @@ else
             local lp_root = lp_root()
             local lp_hum = lp_hum()
 
-            lp_hum.Walkspeed = 0
+            lp_hum.WalkSpeed = 0
             lp_root.Anchored = true
             send_msg("You froze me! I'm unable to move :(")
         end)
@@ -135,7 +149,7 @@ else
             local lp_root = lp_root()
             local lp_hum = lp_hum()
 
-            lp_hum.Walkspeed = 16
+            lp_hum.WalkSpeed = 16
             lp_root.Anchored = false
             send_msg("I'm free! And able to move :D")
         end)
@@ -159,7 +173,7 @@ else
 
         addcmd("help", function()
             for cmd, n in commands do
-                if string.match(chat_sent, cmd) then
+                if cmd ~= "help" and string.find(chat_sent,  cmd) then
                     local need_help = cmd_info[cmd]
 
                     send_msg(need_help)
@@ -167,10 +181,65 @@ else
             end
         end)
 
+        addcmd("rejoin", function()
+            if player_sent == owner_player then 
+                TeleportService:Teleport(game.PlaceId)
+            end
+        end)
+
+        addcmd("whitelist", function()
+            if player_sent == owner_player then
+                local cleared_name = string.gsub(chat_sent, "!whitelist ", "")
+
+                for _, player in Players do 
+                    if string.find(player.Name, cleared_name) or string.find(player.Displayname, cleared_name) then
+                        table.insert(whitelisted_players, tostring(player))
+                        send_msg("Successfully whitelisted: " .. tostring(player))
+                    end
+                end
+            end
+        end)
+
+        addcmd("blacklist", function()
+            if player_sent == owner_player then
+                local cleared_name = string.gsub(chat_sent, "!blacklist ", "")
+
+                for _, player in Players do 
+                    if string.find(player.Name, cleared_name) or string.find(player.Displayname, cleared_name) then
+                        table.insert(blacklisted_players, tostring(player))
+                        send_msg("Successfully blacklisted: " .. tostring(player))
+                    end
+                end
+            end
+        end)
+
+        addcmd("re", function()
+            local lp_hum = lp_hum()
+
+            if is_not_null(lp_hum, workspace) then
+                lp_hum.Health = 0
+            end
+        end)
+
+        addcmd("credits", function()
+            send_msg("All credits go to: n.eural / newline_neural!")
+        end)
+
+        addcmd("remind", function()
+            send_msg("Access a command by typing ! then the command.")
+        end)
+
+        addcmd("clearchat", function()
+            send_msg(". \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n .")
+        end)
+
+        ------------------------------------------------------------------------
+
         local end_time = tick()
 
         spawn(function()
             if rawlen(commands) == rawlen(cmd_info) then
+                table.sort(commands)
                 send_msg("Commands loaded in: " .. tostring(math.round(end_time - start_time)) .. " Seconds!")
             else
                 warn("Commands failed to load...")
@@ -192,29 +261,28 @@ else
             player_sent = tostring(txtchatmsg.TextSource)
         
             if player_sent == tostring(localplayer) then
-                recent_chat_sent = chat_sent
-                print(recent_chat_sent)
+                env.recent_chat_sent = chat_sent
             end
         
             for cmd_name, cmd in pairs(commands) do
-                print(cmd_name, cmd)
-                if enabled and string.match(chat_sent, prefix .. cmd_name) and table.find(whitelisted_players, player_sent) then
+                local true_cmd = prefix..cmd_name
+
+                if enabled and string.find(chat_sent, true_cmd) and table.find(whitelisted_players, player_sent) then
                     print("Running command:", cmd_name)
+                    
                     xpcall(function() cmd() end, function(err)
                         send_msg("Oops, an error occurred. Sorry!")
                         warn(err)
                     end)
-                elseif enabled and string.match(chat_sent, prefix .. cmd_name) then
-                    warn("Command found yet, table check failed!")
-                elseif enabled and table.find(whitelisted_players, player_sent) then
-                    warn("Command not found yet, table check success!")
+
+                    table.insert(commands_sent, cmd_name)
+
+                    wait(cooldown)
                 elseif table.find(blacklisted_players, player_sent) then
                     send_msg("You are blocked from running commands.")
-                elseif not enabled and string.match(chat_sent, "^" .. prefix .. "enable$") then
-                    spawn(commands["enable"])
+                elseif not enabled and string.find(chat_sent, true_cmd) and table.find(whitelisted_players, player_sent) then
+                   commands["enable"]()
                 end
-
-                wait(cooldown)
             end
         end)
     end    
