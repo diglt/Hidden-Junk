@@ -1,3 +1,8 @@
+--[[
+    neurals command bot!
+    version: 0 (pre-release)
+]]--
+
 -- // enviroment setup \\ -- 
 if getgenv().enabled then
     error("Already Executed!")
