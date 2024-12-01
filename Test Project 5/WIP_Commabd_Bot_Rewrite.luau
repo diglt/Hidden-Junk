@@ -10,7 +10,6 @@ else
     if env and wait and cloneref then
         -- // Servicies \\ -- 
         local Players = cloneref(game:GetService("Players"))
-        local TextService = cloneref(game:GetService("TextService"))
         local TweenService = cloneref(game:GetService("TweenService"))
         local TextChatService = cloneref(game:GetService("TextChatService"))
         local TeleportService = cloneref(game:GetService("TeleportService"))
@@ -21,10 +20,16 @@ else
         env.chat_sent = ""
         env.txtchannel = nil
         env.playersent = nil
+        env.is_mimicing = false
+        env.is_stalking = false
+        env.is_spinning = false
         
         local recent_chat_sent = ""
         local prefix = "!"
         local cooldown = 1
+
+        local player_stalking
+        local player_mimicking
 
         local localplayer = Players.LocalPlayer
         local owner_player = localplayer.Name
@@ -50,23 +55,31 @@ else
         local start_time = tick()
 
         local cmd_info = {
-            ["enable"] = "BOOLVALUE: Enables bot",
-            ["disable"] = "(OWNER ONLY) BOOLVALUE: Disables bot",
-            ["sit"] = "Forces bot to sit!",
-            ["jump"] = "Forces bot to jump!",
-            ["freeze"] = "BOOLVALUE: Freezes bot! to unfreeze type: unfreeze",
-            ["unfreeze"] = "BOOLVALUE: Unfreezes bot! to freeze type: freeze",
-            ["dance"] = "(dance<number>) Allows you to make me dance randomly or your choice of dance!",
-            ["cmds"] = "Displays a list of commands!",
-            ["help"] = "(help <command>) Displays help about certain commands!",
-            ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
-            ["whitelist"] = "(OWNER ONLY) (whitelist <player>) Allows owner to set access to commands!",
             ["blacklist"] = "(OWNER ONLY) (blacklist <player>) Makes the player chosen unable to access commands.",
-            ["re"] = "Respawns the character!",
+            ["clearchat"] = "Clears chat!",
+            ["cmds"] = "Displays a list of commands!",
             ["credits"] = "Displays the credits of the script!",
+            ["dance"] = "(dance<number>) Allows you to make me dance randomly or your choice of dance!",
+            ["disable"] = "(OWNER ONLY) BOOLVALUE: Disables bot",
+            ["enable"] = "BOOLVALUE: Enables bot",
+            ["freeze"] = "BOOLVALUE: Freezes bot! to unfreeze type: unfreeze",
+            ["help"] = "(help <command>) Displays help about certain commands!",
+            ["jump"] = "Forces bot to jump!",
+            ["kill"] = "Kills the character!",
+            ["mimic"] = "BOOLVALUE: (mimic <player>) Copies the chat of the player!",
+            ["prefix"] = "(prefix <character>) Changes the prefix for running commands!",
+            ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
             ["remind"] = "Reminds players of how to execute commands!",
-            ["clearchat"] = "Clears chat!"
+            ["sit"] = "Forces bot to sit!",
+            ["stalk"] = "BOOLVALUE: (stalk <player>) Follows the player where ever they go... ;)",
+            ["spin"] = "BOOLVALUE: (spin<number>) Spins me right round, right round :D",
+            ["unfreeze"] = "BOOLVALUE: Unfreezes bot! to freeze type: freeze",
+            ["unmimic"] = "BOOLVALUE: Stops the mimic.",
+            ["unstalk"] = "BOOLVALUE: Stops stalking the selected player!",
+            ["unspin"] = "BOOLVALUE: Stops spinning.",
+            ["whitelist"] = "(OWNER ONLY) (whitelist <player>) Allows owner to set access to commands!"
         }
+        
 
         -- // function setup \\ --
         local function return_char(plr)
@@ -103,10 +116,15 @@ else
             end
         end
 
-
         local function addcmd(name, command)
             commands[name] = command
         end
+
+        local function ret_gsb(cmd, pattern)
+            return string.gsub(chat_sent, cmd, pattern)
+        end
+
+        --------------------------------------------------------------------------------------
 
         addcmd("enable", function()
             if not env.enabled then 
@@ -164,7 +182,7 @@ else
         addcmd("cmds", function()
             local long_list = ""
         
-            for cmd_name, _ in pairs(commands) do
+            for cmd_name, _ in pairs(cmd_info) do
                 long_list = long_list .. cmd_name .. "\n"
             end
         
@@ -189,12 +207,14 @@ else
 
         addcmd("whitelist", function()
             if player_sent == owner_player then
-                local cleared_name = string.gsub(chat_sent, "!whitelist ", "")
+                local cleared_name = string.gsub(chat_sent, prefix.."whitelist ", "")
 
-                for _, player in Players do 
-                    if string.find(player.Name, cleared_name) or string.find(player.Displayname, cleared_name) then
-                        table.insert(whitelisted_players, tostring(player))
-                        send_msg("Successfully whitelisted: " .. tostring(player))
+                for _, player in pairs(Players:GetPlayers()) do 
+                    if player ~= localplayer then
+                        if string.find(player.Name, cleared_name) or string.find(player.DisplayName, cleared_name) then
+                            table.insert(whitelisted_players, tostring(player))
+                            send_msg("Successfully whitelisted: " .. tostring(player))
+                        end
                     end
                 end
             end
@@ -202,18 +222,20 @@ else
 
         addcmd("blacklist", function()
             if player_sent == owner_player then
-                local cleared_name = string.gsub(chat_sent, "!blacklist ", "")
+                local cleared_name = string.gsub(chat_sent, prefix.."blacklist ", "")
 
-                for _, player in Players do 
-                    if string.find(player.Name, cleared_name) or string.find(player.Displayname, cleared_name) then
-                        table.insert(blacklisted_players, tostring(player))
-                        send_msg("Successfully blacklisted: " .. tostring(player))
+                for _, player in pairs(Players:GetPlayers()) do 
+                    if player ~= localplayer then
+                        if string.find(player.Name, cleared_name) or string.find(player.DisplayName, cleared_name) then
+                            table.insert(blacklisted_players, tostring(player))
+                            send_msg("Successfully blacklisted: " .. tostring(player))
+                        end
                     end
                 end
             end
         end)
 
-        addcmd("re", function()
+        addcmd("kill", function()
             local lp_hum = lp_hum()
 
             if is_not_null(lp_hum, workspace) then
@@ -226,11 +248,63 @@ else
         end)
 
         addcmd("remind", function()
-            send_msg("Access a command by typing ! then the command.")
+            send_msg("Access a command by typing "..prefix.. " then the command.")
         end)
 
         addcmd("clearchat", function()
             send_msg(". \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n .")
+        end)
+
+        addcmd("stalk", function()
+            return
+        end)
+
+        addcmd("unstalk", function()
+            return
+        end)
+
+        addcmd("mimic", function()
+            player_mimicking = string.gsub(chat_sent, prefix.."mimic ", "")
+
+            for _, player in pairs(Players:GetPlayers()) do 
+                if player ~= localplayer then
+                    if string.find(player.Name, player_mimicking) or string.find(player.DisplayName, player_mimicking) then
+                        is_mimicing = true
+
+                        player_mimicking = tostring(player)
+
+                        send_msg("Beginning to mimic: " .. player_mimicking)
+                    end
+                end
+            end
+        end)
+
+        addcmd("unmimic", function()
+            if is_mimicing and player_mimicking then
+                player_mimicking = nil
+                is_mimicing = false
+                send_msg("Successfully stopped mimicing!")
+            end
+        end)
+
+        addcmd("prefix", function()
+            prefix = string.gsub(chat_sent, prefix.."prefix", "")
+        end)
+
+        addcmd("spin", function()
+            local spin_amount = tonumber(ret_gsb("spin", ""))
+
+            while is_spinning do
+                local lp_root = lp_root()
+
+                lp_root.Position = Vector3.new(lp_root.Position + spin_amount, lp_root.Position.Y, lp_root.Position.Z)
+            end
+        end)
+
+        addcmd("unspin", function()
+            if is_spinning then
+                is_spinning = false
+            end
         end)
 
         ------------------------------------------------------------------------
@@ -239,7 +313,6 @@ else
 
         spawn(function()
             if rawlen(commands) == rawlen(cmd_info) then
-                table.sort(commands)
                 send_msg("Commands loaded in: " .. tostring(math.round(end_time - start_time)) .. " Seconds!")
             else
                 warn("Commands failed to load...")
@@ -253,7 +326,7 @@ else
             warn(ppl)
         end
 
-        -- // main function logic \\ --
+        -- // chat function logic \\ --
         
         TextChatService.MessageReceived:Connect(function(txtchatmsg)
             chat_sent = txtchatmsg.Text
@@ -271,7 +344,7 @@ else
                     print("Running command:", cmd_name)
                     
                     xpcall(function() cmd() end, function(err)
-                        send_msg("Oops, an error occurred. Sorry!")
+                        send_msg("Oops, an error occurred. Check developer console for error log!")
                         warn(err)
                     end)
 
@@ -283,6 +356,10 @@ else
                 elseif not enabled and string.find(chat_sent, true_cmd) and table.find(whitelisted_players, player_sent) then
                    commands["enable"]()
                 end
+            end
+
+            if is_mimicing and player_sent == player_mimicking then
+                send_msg(chat_sent)
             end
         end)
     end    
