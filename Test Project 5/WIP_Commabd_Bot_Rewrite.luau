@@ -47,6 +47,7 @@ else
         -- // tables \\ -- 
         local commands = {}
         local commands_sent = {}
+        local check_chat_logs = {}
         local blacklisted_players = {}
         local whitelisted_players = {owner_player}
         local ran_send_owner_cmd = {}
@@ -56,6 +57,7 @@ else
 
         local cmd_info = {
             ["blacklist"] = "(OWNER ONLY) (blacklist <player>) Makes the player chosen unable to access commands.",
+            ["checkbypassers"] = "Checks chat logs to see if anyone may be bypassing! (unreliable)",
             ["clearchat"] = "Clears chat!",
             ["cmds"] = "Displays a list of commands!",
             ["credits"] = "Displays the credits of the script!",
@@ -108,20 +110,23 @@ else
             return return_humanoid(char)
         end
 
-        local function is_not_null(testing_item, target)
-            if not target then target = workspace end
-
-            if testing_item.IsDescendantOf(target) then
-                return true
-            end
-        end
-
         local function addcmd(name, command)
             commands[name] = command
         end
 
         local function ret_gsb(cmd, pattern)
             return string.gsub(chat_sent, cmd, pattern)
+        end
+
+        local function create_tween(start, endpoint, speed)
+            pcall(function()
+                local tween_CFrame = {CFrame = endpoint}
+                local tween_info = TweenInfo.new(speed)
+                local lp_root = lp_root()
+
+                local tween = TweenService:Create(start, tween_info, tween_CFrame)
+                tween:Play()
+            end)
         end
 
         --------------------------------------------------------------------------------------
@@ -172,21 +177,28 @@ else
             send_msg("I'm free! And able to move :D")
         end)
 
-        addcmd("dance", function(choose_emote)
-            if not choose_emote then send_msg("/e dance")
+        addcmd("dance", function()
+            local better = ret_gsb(prefix.."dance", "")
+            if rawlen(better) <= 0 then send_msg("/e dance")
             else
-                send_msg("/e dance" .. tostring(choose_emote))
+                send_msg("/e dance" .. tostring(better))
             end
         end)
 
         addcmd("cmds", function()
             local long_list = ""
+            local longer_list = ""
         
             for cmd_name, _ in pairs(cmd_info) do
-                long_list = long_list .. cmd_name .. "\n"
+                if rawlen(long_list) < 180 then 
+                    long_list = long_list .. cmd_name .. "\n"
+                else
+                    longer_list = longer_list .. cmd_name .. "\n"
+                end
             end
         
             send_msg("Here's a list of commands:\n" .. long_list)
+            send_msg("\n"..longer_list)
         end)
 
         addcmd("help", function()
@@ -236,10 +248,20 @@ else
         end)
 
         addcmd("kill", function()
+            local old_root = lp_root()
             local lp_hum = lp_hum()
 
-            if is_not_null(lp_hum, workspace) then
+            local oldpos = old_root.CFrame
+
+            if lp_hum then
                 lp_hum.Health = 0
+                
+                localplayer.CharacterAdded:Connect(function()
+                    wait(1)
+                    local lp_root = lp_root()
+
+                    create_tween(lp_root, oldpos, 3)
+                end)
             end
         end)
 
@@ -288,11 +310,11 @@ else
         end)
 
         addcmd("prefix", function()
-            prefix = string.gsub(chat_sent, prefix.."prefix", "")
+            prefix = string.gsub(chat_sent, prefix.."prefix ", "")
         end)
 
         addcmd("spin", function()
-            local spin_amount = tonumber(ret_gsb("spin", ""))
+            local spin_amount = tonumber(ret_gsb(prefix.."spin", "")) or tonumber(string.gsub(chat_sent, prefix.."spin", ""))
 
             while is_spinning do
                 local lp_root = lp_root()
@@ -304,6 +326,24 @@ else
         addcmd("unspin", function()
             if is_spinning then
                 is_spinning = false
+            end
+        end)
+
+        addcmd("checkbypassers", function()
+            local supported = {
+                "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", 
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+                "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 
+                "`", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "[", "]", "{", "}", "\\", "|", ";", ":", "'", "\"", ",", "<", ".", ">", "/", "?" 
+            }
+
+            local caught = {}
+
+            for chat, player in pairs(check_chat_logs) do 
+                if not table.find(supported, chat[1]) and not table.find(caught, player) then
+                    send_msg("Player: (" .. tostring(player) .. ") is bypassing. (T_T)")
+                    table.insert(caught, player)
+                end
             end
         end)
 
@@ -332,6 +372,7 @@ else
             chat_sent = txtchatmsg.Text
             txtchannel = txtchatmsg.TextChannel
             player_sent = tostring(txtchatmsg.TextSource)
+            check_chat_logs[chat_sent] = player_sent
         
             if player_sent == tostring(localplayer) then
                 env.recent_chat_sent = chat_sent
