@@ -1,566 +1,289 @@
-local TextChatService = game:GetService("TextChatService")
-local TeleportService = game:GetService("TeleportService")
-local PathfindingService = game:GetService("PathfindingService")
+-- // enviroment setup \\ -- 
+if getgenv().enabled then
+    error("Already Executed!")
+else
+    local env = getgenv()
+    local wait = task.wait
+    local spawn = task.spawn
+    local cloneref = cloneref or getgenv().cloneref or function(object) return object end
 
-getgenv().Enabled = false
-getgenv().tweening = false
-getgenv().pathfinding = false
-getgenv().IsRandomWalking = false
+    if env and wait and cloneref then
+        -- // Servicies \\ -- 
+        local Players = cloneref(game:GetService("Players"))
+        local TextService = cloneref(game:GetService("TextService"))
+        local TweenService = cloneref(game:GetService("TweenService"))
+        local TextChatService = cloneref(game:GetService("TextChatService"))
+        local TeleportService = cloneref(game:GetService("TeleportService"))
+        local PathfindingService = cloneref(game:GetService("PathfindingService"))
 
-local Whitelisted = {"gb_synapse" or "DripYeager"}
+        -- // variables \\ -- 
+        env.enabled = false
+        env.chat_sent = ""
+        env.txtchannel = nil
+        env.playersent = nil
+        
+        local recent_chat_sent = ""
+        local prefix = "!"
+        local cooldown = 1
 
-local BlacklistedPlayers = {"johnny_jsl1", "RobloxBaller077", "Star_knight94"}
-local HasRanSendCommand = {}
+        local localplayer = Players.LocalPlayer
+        local owner_player = localplayer.Name
 
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-local IsFrozen = false
-local IsSpinning = false
-local Index = 0
-local Pattern = "!"
-local IsDisabled = false
-local IsMimicking
-local PlayerMimicking
-local WhitelistedPlayer = Whitelisted or lp.Name
-local wbhook = "ur not getting my webhook :)"
-local CoolDown
+        local send_msg = function(msg)
+            if string.find(recent_chat_sent, "#") then 
+                TextChatService.TextChannels.RBXGeneral:SendAsync("Last Text Filtered! Please wait...")
+                wait(2)
+                TextChatService.TextChannels.RBXGeneral:SendAsync(msg)
+            else
+                TextChatService.TextChannels.RBXGeneral:SendAsync(msg)
+            end
+        end
+
+        -- // tables \\ -- 
+        local commands = {}
+        local commands_sent = {}
+        local blacklisted_players = {}
+        local whitelisted_players = {owner_player}
+        local ran_send_owner_cmd = {}
+
+        -- // command inf \\ -- 
+        local start_time = tick()
+
+        local cmd_info = {
+            ["enable"] = "BOOLVALUE: Enables bot",
+            ["disable"] = "(OWNER ONLY) BOOLVALUE: Disables bot",
+            ["sit"] = "Forces bot to sit!",
+            ["jump"] = "Forces bot to jump!",
+            ["freeze"] = "BOOLVALUE: Freezes bot! to unfreeze type: unfreeze",
+            ["unfreeze"] = "BOOLVALUE: Unfreezes bot! to freeze type: freeze",
+            ["dance"] = "(dance<number>) Allows you to make me dance randomly or your choice of dance!",
+            ["cmds"] = "Displays a list of commands!",
+            ["help"] = "(help <command>) Displays help about certain commands!",
+            ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
+            ["whitelist"] = "(OWNER ONLY) (whitelist <player>) Allows owner to set access to commands!",
+            ["blacklist"] = "(OWNER ONLY) (blacklist <player>) Makes the player chosen unable to access commands.",
+            ["re"] = "Respawns the character!",
+            ["credits"] = "Displays the credits of the script!",
+            ["remind"] = "Reminds players of how to execute commands!",
+            ["clearchat"] = "Clears chat!"
+        }
+
+        -- // function setup \\ --
+        local function return_char(plr)
+            return plr.Character or plr.CharacterAdded:wait()
+        end
+
+        local function return_root(char)
+            return char.HumanoidRootPart or char.PrimaryPart
+        end
+
+        local function return_humanoid(char)
+            return char.Humanoid or char:FindFirstChildOfClass("Humanoid")
+        end
+
+        local function lp_char()
+            return return_char(localplayer)
+        end
+
+        local function lp_root()
+            local char = return_char(localplayer)
+            return return_root(char)
+        end
+
+        local function lp_hum()
+            local char = return_char(localplayer)
+            return return_humanoid(char)
+        end
+
+        local function is_not_null(testing_item, target)
+            if not target then target = workspace end
+
+            if testing_item.IsDescendantOf(target) then
+                return true
+            end
+        end
 
 
+        local function addcmd(name, command)
+            commands[name] = command
+        end
 
-function IsValid(Object, target)
-	return Object:IsDescendantOf(target or game)
-end
-
-function GetChar(player)
-	return player.Character
-end
-
-function GetRoot(char)
-	return char:FindFirstChild("HumanoidRootPart")
-end
-
-function GetHumanoid(char)
-	return char:FindFirstChildOfClass("Humanoid")
-end
-
-function CallPathfinding(positionStarting, positionEnding, lpHumanoid, ValueToDecideIfWait)
-    if IsFrozen then 
-        return
-    end
-
-    local Path = PathfindingService:CreatePath({
-        AgentRadius = 50,
-        AgentHeight = 50,
-        AgentCanJump = true,
-    })
-
-    local PutBehindPlr = positionEnding - Vector3.new(0, 0, -3)
-
-        local success, err = pcall(function()
-            Path:ComputeAsync(positionStarting, PutBehindPlr)
+        addcmd("enable", function()
+            if not env.enabled then 
+                enabled = true
+                send_msg("Successfully enabled commands!")
+            else
+                send_msg("Already Enabled!")
+            end
         end)
 
-        if success and Path.Status == Enum.PathStatus.Success then 
-            local Waypoints = Path:GetWaypoints()
+        addcmd("disable", function()
+            if player_sent == owner_player then 
+                enabled = false
+                send_msg("Successfully disabled commands!")
+            end
+        end)
 
-            for _, waypoint in ipairs(Waypoints) do 
-                lpHumanoid:MoveTo(waypoint.Position)
+        addcmd("sit" , function()
+            local lp_hum = lp_hum()
 
-                if ValueToDecideIfWait then 
-                    lpHumanoid.MoveToFinished:Wait(5)
+            lp_hum.Sit = true
+        end)
+
+        addcmd("jump", function()
+            local lp_hum = lp_hum()
+
+            lp_hum.Jump = true
+        end)
+
+        addcmd("freeze", function()
+            local lp_root = lp_root()
+            local lp_hum = lp_hum()
+
+            lp_hum.WalkSpeed = 0
+            lp_root.Anchored = true
+            send_msg("You froze me! I'm unable to move :(")
+        end)
+
+        addcmd("unfreeze", function()
+            local lp_root = lp_root()
+            local lp_hum = lp_hum()
+
+            lp_hum.WalkSpeed = 16
+            lp_root.Anchored = false
+            send_msg("I'm free! And able to move :D")
+        end)
+
+        addcmd("dance", function(choose_emote)
+            if not choose_emote then send_msg("/e dance")
+            else
+                send_msg("/e dance" .. tostring(choose_emote))
+            end
+        end)
+
+        addcmd("cmds", function()
+            local long_list = ""
+        
+            for cmd_name, _ in pairs(commands) do
+                long_list = long_list .. cmd_name .. "\n"
+            end
+        
+            send_msg("Here's a list of commands:\n" .. long_list)
+        end)
+
+        addcmd("help", function()
+            for cmd, n in commands do
+                if cmd ~= "help" and string.find(chat_sent,  cmd) then
+                    local need_help = cmd_info[cmd]
+
+                    send_msg(need_help)
                 end
             end
-    elseif err then
-        print("error occured...", err)
-    end
-end
+        end)
 
-function GetOldCFrame(part)
-    if part then 
-        return part.CFrame
-    end
-end
-
-function CheckIfNotLP()
-    for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-        if v ~= lp then 
-            return v
-        end
-    end
-end
-
-
-TextChatService.MessageReceived:Connect(function(textChatMessage)
-	local Text = textChatMessage.Text
-	local TextChannel = textChatMessage.TextChannel
-	local PlayerCalling  = tostring(textChatMessage.TextSource)
-	local CommandList = {"!enable", "!bring", "!chat <message>", "!credits", "!disable", "!kill", "!dance", "!freeze", "!unfreeze", "!jump", "!sit", "!stalk <player>", "!unstalk", "!unspin", "!cmds"}
-    local CommandList2 = {"!howDoesItWork", "!remind", "!randomwalk", "!unrandomwalk", "!publicChat <chat>", "!goto <player>", "!mimic <player>", "!unmimic", "!sendOwnerMsg <message>", "!help <command>", "!fling",}
-
-    local ExplanationTable = {
-        ["bring"] = "Brings me to your position!",
-        ["stalk"] = "Follows <player>, just type stalk then the players username.",
-        ["spin"] = "Spins <speed>",
-        ["howDoesItWork"] = "Explains how this script functions.",
-        ["chat"] = "Sends the message input straight after the command! Example, chat Hello",
-        ["publicChat"] = "Allows for the chat function to be used, in DM's, without showcasing who sent the chat!",
-        ["mimic"] = "Copies the chat of the player inputted, example: mimic MyUsername",
-        ["fling"] = "Flings me!",
-        ["kill"] = "Forces me to reset, why would you do such a thing?",
-        ["credits"] = "Gives credits to my creator!",
-        ["status"] = "Tells you wether i am ENABLED, or DISABLED!",
-        ["freeze"] = "Causes me to be unable to move.",
-        ["sendOwnerMsg"] = "Sends a message to a certain channel, that the creator of this script, can read!",
-        ["goto"] = "Goes to the inputted players position! Example: goto MyUserName",
-        ["remind"] = "Reminds server that ANYONE can access this bot!",
-        ["blacklist"] = "If whoevers username was put after this message, cannot run any commands!"
-     }
-
-    table.sort(CommandList)
-    table.sort(CommandList2)
-
-    if CoolDown then 
-        return
-    end
-
-
-	if Text == "!enable" and Enabled == false and IsDisabled == false then
-		TextChannel:SendAsync("Globally Enabled! Any player can access...")
-		getgenv().Enabled = true
-    elseif Text == "!enable" and Enabled == false and IsDisabled then 
-        TextChannel:SendAsync("Currently disabled, cannot be enabled.")
-        if PlayerCalling == WhitelistedPlayer then 
-            getgenv().Enabled = true
-        end
-    end
-
-	if Text == "!disable" and PlayerCalling == WhitelistedPlayer then 
-		TextChannel:SendAsync("Disabled by: (" .. PlayerCalling .. ")")
-		task.wait(1)
-        IsDisabled = true
-        Index = 0
-        getgenv().Enabled = false
-
-	elseif Text == "!disable" and PlayerCalling ~= WhitelistedPlayer then
-		TextChannel:SendAsync("You (" .. PlayerCalling .. ") Cannot access this command. Only (" .. WhitelistedPlayer .. ") May run this command.")
-	end
-
-    if Text == "!status" then 
-        if Enabled then 
-            TextChannel:SendAsync("I am currently (ENABLED)")
-        else
-            TextChannel:SendAsync("I am currently (DISABLED)")
-        end
-    end
-
-
-	if Enabled and not table.find(BlacklistedPlayers, PlayerCalling) then 
-
-        if string.find(Text, "!help") and not string.find(Text, "!remind") then 
-            local CommandToExplain = string.gsub(Text, "!help ", "")
-
-            local CmdInTable = ExplanationTable[CommandToExplain]
-            TextChannel:SendAsync(CmdInTable)
-        end
-
-
-
-        local Command = Pattern .. "blacklist"
-
-        if string.find(Text, Command) and PlayerCalling == WhitelistedPlayer and not string.find(Text, "!remind") then
-            local PlayerToBlacklist = string.gsub(Text, Command .. " ", "")
-            table.insert(BlacklistedPlayers, PlayerToBlacklist)
-    
-            TextChannel:SendAsync("Player Blacklisted: " .. PlayerToBlacklist)
-        end
-
-
-        if string.find(Text, "!unblacklist") and PlayerCalling == WhitelistedPlayer and not string.find(Text, "!remind") then 
-            local UnBlacklistedPlr = string.gsub(Text, "!unblacklist ", "")
-
-            table.remove(BlacklistedPlayers, UnBlacklistedPlr)
-            TextChannel:SendAsync("Player: " .. UnBlacklistedPlr .. " Has been Un-Blacklisted")
-        end
-
-
-        if IsMimicking and PlayerCalling == PlayerMimicking then 
-            TextChannel:SendAsync(Text)
-        end
-
-		if Text == "!cmds" then 
-			local StringOfCommands = ""
-            local StringOfCommands2 = ""
-
-			for i  = 1, #CommandList do 
-				local CurrentCommand = CommandList[i]
-
-				StringOfCommands = StringOfCommands .. CurrentCommand .. ", "
-			end
-			TextChannel:SendAsync("Here is a list of all the commands! " .. StringOfCommands)
-            task.wait(1.25)
-
-            for i2 = 1, #CommandList2 do 
-                local CurrentCommand2 = CommandList2[i2]
-
-                StringOfCommands2 = StringOfCommands2 .. CurrentCommand2 .. ", "
+        addcmd("rejoin", function()
+            if player_sent == owner_player then 
+                TeleportService:Teleport(game.PlaceId)
             end
-            TextChannel:SendAsync(StringOfCommands2)
-		end
+        end)
 
-		if Text == "!rejoin" and PlayerCalling == WhitelistedPlayer then
-			TextChannel:SendAsync("Rejoining Server!, most likely Update / Bug Fix!")
-			task.wait(1)
-			TeleportService:Teleport(game.PlaceId, lp, game.JobId)
-        elseif Text == "!rejoin" and PlayerCalling ~= WhitelistedPlayer then
-            TextChannel:SendAsync("You (" .. PlayerCalling .. ") Cannot access this command. Only (" .. WhitelistedPlayer .. ") May run this command.")
-		end
+        addcmd("whitelist", function()
+            if player_sent == owner_player then
+                local cleared_name = string.gsub(chat_sent, "!whitelist ", "")
 
-		if Text == "!sit" then 
-			local char = GetChar(lp)
-			local humanoid = GetHumanoid(char)
-
-			humanoid.Sit = true
-		end
-
-		if Text == "!jump" then
-			local char = GetChar(lp)
-			local humanoid = GetHumanoid(char)
-
-			humanoid.Jump = true
-		end
-
-		if Text == "!freeze" then 
-			IsFrozen = true
-
-			TextChannel:SendAsync("Currently Frozen! Brrrr...")
-			local char = GetChar(lp)
-			local hum = GetHumanoid(char)
-
-			hum.JumpPower = 0
-			hum.Walkspeed = 0
-
-			for i,v in pairs(char:GetChildren()) do 
-				if v:IsA("Part") or v:IsA("BasePart") then 
-					v.Anchored = true
-				end
-			end
-            return IsFrozen
-		end
-
-		if Text == "!unfreeze" then 
-			IsFrozen = false
-			TextChannel:SendAsync("I've been thawed! :D")
-			local char = GetChar(lp)
-			local hum = GetHumanoid(char)
-
-			hum.JumpPower = 50
-			hum.Walkspeed = 16
-
-			for i,v in pairs(char:GetChildren()) do 
-				if v:IsA("Part") or v:IsA("BasePart") then 
-					v.Anchored = false
-				end
-			end
-            return IsFrozen
-		end
-
-		if string.match(Text, "!chat") and not string.match(Text, "!cmds") then 
-			local TheSendingMessage = string.gsub(Text, ".chat", "")
-
-			TextChannel:SendAsync(TheSendingMessage)
-		end
-
-        if string.match(Text, "!publicChat") and not string.match(Text, "!remind") then 
-            local SendinMessage = string.gsub(Text, ".publicChat", "")
-            local PublicChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
-
-            PublicChannel:SendAsync(SendinMessage)
-        end
-
-
-		if Text == "!bring" and IsFrozen == false then 
-			local plr = Players:FindFirstChild(PlayerCalling)
-			local Char = GetChar(plr)
-			local Root = GetRoot(Char)
-
-			local lpChar = GetChar(lp)
-			local lpRoot = GetRoot(lpChar)
-
-			if lpRoot and Root then
-				local TweenCFrame = {
-					CFrame = Root.CFrame
-				}
-
-				local Tween = TweenService:Create(lpRoot, TweenInfo.new(1), TweenCFrame)
-				TextChannel:SendAsync("Being brought to... " .. PlayerCalling)
-				Tween:Play()
-            elseif Text == ".bring" and IsFrozen == true then
-                TextChannel:SendAsync("I'm currently frozen. Type !unfreeze to release me!")
-			end
-		end
-
-
-        if Text == "!fling" then 
-            TextChannel:SendAsync("Currently going into orbit :O")
-
-            local char = GetChar(lp)
-            local root = GetRoot(char)
-            local oldCF = GetOldCFrame(root)
-            local hum = GetHumanoid(char)
-
-            root.AssemblyAngularVelocity = Vector3.new(900, 900, 900)
-            root.AssemblyLinearVelocity = Vector3.new(900, 900, 900)
-
-            task.wait(2)
-            hum.Health = 0 
-        end
-
-        if Text == "!dance" then
-            TextChannel:SendAsync("Currently dancing B)")
-            TextChannel:SendAsync("/e dance")
-        end
-
-        if Text == "!credits" then 
-            TextChannel:SendAsync("This is a work in progress script. I was made by n.eural / impact :)")
-        end
-
-
-        if string.match(Text, "!spin") and not string.match(Text, ".cmds") then 
-            local spinRotation = string.gsub(Text, ".spin", "")
-            local ToNumber = tonumber(spinRotation)
-            IsSpinning = true
-
-            while IsSpinning do
-                local Char = GetChar(lp)
-                local Root = GetRoot(Char)
-                local oldRootX, oldrootZ = Root.Orientation.X, Root.Orientation.Z
-
-                if Root then 
-                    Root.Orientation = Root.Orientation + Vector3.new(oldRootX, ToNumber, oldrootZ)
-                    task.wait()
-                else
-                    IsSpinning = false
-                end
-            end
-        end
-
-
-        if string.match(Text, "!unspin") and not string.match(Text, ".cmds") then
-            IsSpinning = false
-
-            return IsSpinning
-        end
-
-        if Text == "!troll" then 
-            TextChannel:SendAsync('"bro idk how to use math.random()" - professional / folixx what a great scripter right?')
-        end
-
-        if Text == "!kill" then 
-            local Root = GetRoot(GetChar(lp))
-            local hum = GetHumanoid(GetChar(lp))
-            local oldCF = GetOldCFrame(Root)
-
-            hum.Health = 0
-
-            lp.CharacterAdded:Connect(function(character)
-                task.wait(1)
-                local root = GetRoot(character)
-                local TweenCFrame = {
-                    CFrame = oldCF
-                }
-
-                local Tween = TweenService:Create(root, TweenInfo.new(1), TweenCFrame)
-                Tween:Play()
-            end)
-        end
-
-
-        if string.find(Text, "!stalk") and not string.find(Text, "!cmds") then
-            local Person 
-            local FromPlrService
-            Person = string.gsub(Text, "!stalk ", "")
-            getgenv().pathfinding = true
-
-            if Person ~= "random" then 
-                FromPlrService = Players:FindFirstChild(Person) 
-
-                TextChannel:SendAsync("Currently Stalking: " .. tostring(FromPlrService))
-
-                while pathfinding do
-                    local char = GetChar(lp)
-                    local root = GetRoot(char)
-                    local hum = GetHumanoid(char)
-    
-                    local theirchar = GetChar(FromPlrService)
-                    local theirroot = GetRoot(theirchar)
-    
-                    if root and theirroot and IsFrozen == false then
-                        CallPathfinding(root.Position, theirroot.Position, hum, false) 
-                    elseif IsFrozen then
-                        task.wait(1)
-                        getgenv().pathfinding = false
-                        TextChannel:SendAsync("Current frozen and unable to move, thaw me using !unfreeze")
-                    end
-                end
-
-
-           elseif Person == "random" then
-                FromPlrService = CheckIfNotLP()
-
-                TextChannel:SendAsync("Currently Stalking: " .. tostring(FromPlrService))
-
-                while pathfinding do
-                    local char = GetChar(lp)
-                    local root = GetRoot(char)
-                    local hum = GetHumanoid(char)
-    
-                    local theirchar = GetChar(FromPlrService)
-                    local theirroot = GetRoot(theirchar)
-    
-                    if root and theirroot and IsFrozen == false then
-                        CallPathfinding(root.Position, theirroot.Position, hum, false) 
-                    elseif IsFrozen then
-                        task.wait(1)
-                        getgenv().pathfinding = false
-                        TextChannel:SendAsync("Current frozen and unable to move, thaw me using !unfreeze")
+                for _, player in Players do 
+                    if string.find(player.Name, cleared_name) or string.find(player.Displayname, cleared_name) then
+                        table.insert(whitelisted_players, tostring(player))
+                        send_msg("Successfully whitelisted: " .. tostring(player))
                     end
                 end
             end
-        end
+        end)
 
+        addcmd("blacklist", function()
+            if player_sent == owner_player then
+                local cleared_name = string.gsub(chat_sent, "!blacklist ", "")
 
-        if Text == "!unstalk" then 
-            getgenv().pathfinding = false
-            TextChannel:SendAsync("Successfully called off the stalk.")
-            return pathfinding
-        end
-
-        if Text == "!howDoesItWork" then 
-            TextChannel:SendAsync("This is a client, running an emulator, which is connected to an executor. The executor ran a script which allows ME to see and identify commands in chat, which i appropriately index and run! :)")
-        end
-
-        if Text == "!remind" then 
-            TextChannel:SendAsync("EVERY PLAYER IN THIS SERVER CAN ACCESS COMMANDS! TYPE !cmds TO SEE")
-        end
-
-        if Text == "!bang" then 
-            TextChannel:SendAsync("You have been blacklisted from running commands.")
-
-            table.insert(BlacklistedPlayers, tostring(PlayerCalling))
-        end
-
-        if Text == "!randomwalk" then 
-            getgenv().IsRandomWalking = true
-
-            while IsRandomWalking do
-                local char = GetChar(lp)
-                local Root = GetRoot(char)
-                local Human = GetHumanoid(char)
-
-                local pos1 = Root.Position
-                local pos2 = Vector3.new(math.random(-15, 15), 0 ,math.random(-15, 15))
-
-
-                CallPathfinding(pos1, pos2, Human, true)
-                task.wait() 
+                for _, player in Players do 
+                    if string.find(player.Name, cleared_name) or string.find(player.Displayname, cleared_name) then
+                        table.insert(blacklisted_players, tostring(player))
+                        send_msg("Successfully blacklisted: " .. tostring(player))
+                    end
+                end
             end
-        end
+        end)
 
-        if Text == "!unrandomwalk" then 
-            getgenv().IsRandomWalking = false
-            TextChannel:SendAsync("Stopped randomly walking...")
-        end
+        addcmd("re", function()
+            local lp_hum = lp_hum()
 
-        if string.find(Text, "!goto") and not string.find(Text, "!remind") and IsFrozen == false then 
-            local Stringdplr = string.gsub(Text, "!goto ", "")
-
-            local plr = Players:FindFirstChild(Stringdplr)
-			local Char = GetChar(plr)
-			local Root = GetRoot(Char)
-
-			local lpChar = GetChar(lp)
-			local lpRoot = GetRoot(lpChar)
-
-			if lpRoot and Root then
-				local TweenCFrame = {
-					CFrame = Root.CFrame
-				}
-
-				local Tween = TweenService:Create(lpRoot, TweenInfo.new(1), TweenCFrame)
-				TextChannel:SendAsync("Going towards: " .. Stringdplr)
-				Tween:Play()
-
-            elseif string.find(Text, "!goto") and not string.find(Text, "!remind") and IsFrozen == true then
-                TextChannel:SendAsync("I'm currently frozen. Type !unfreeze to release me!")
-			end
-        end
-
-        if string.find(Text, "!mimic") and not string.find(Text, "!remind") then
-            IsMimicking = true
-
-            PlayerMimicking = string.gsub(Text, "!mimic ", "")
-            TextChannel:SendAsync("Mimic enabled on: " .. PlayerMimicking)
-        end
-
-        if Text == "!unmimic" then 
-            IsMimicking = false
-
-            TextChannel:SendAsync("Mimic has been disabled.")
-        end
-
-        if string.find(Text, "!sendOwnerMsg") and not string.find(Text, "!remind") and not table.find(HasRanSendCommand, PlayerCalling) then 
-            local message = string.gsub(Text, "!sendOwnerMsg ", "")
-            local WebData = {
-                ["content"] = "You got a new message! (**" .. message .. "**) From Player: **" .. tostring(PlayerCalling) .. "**"
-            }
-            
-            local HTTPServ = game:GetService("HttpService")
-            
-            local Encoded = HTTPServ:JSONEncode(WebData)
-            
-            
-            local Headerz = {
-                ["content-type"] = "application/json"
-            }
-            
-            local Request = request({
-                Url = wbhook,
-                Body = Encoded,
-                Method = "POST",
-                Headers = Headerz
-            })
-
-            if Request.Success then 
-                TextChannel:SendAsync("Successfully sent request!")
-
-                table.insert(HasRanSendCommand, PlayerCalling)
+            if is_not_null(lp_hum, workspace) then
+                lp_hum.Health = 0
             end
+        end)
 
-        elseif string.find(Text, "!sendOwnerMsg") and not string.find(Text, "!remind") and table.find(HasRanSendCommand, PlayerCalling)  then
-            print("Player found inside called table, cannot run again :(")
+        addcmd("credits", function()
+            send_msg("All credits go to: n.eural / newline_neural!")
+        end)
+
+        addcmd("remind", function()
+            send_msg("Access a command by typing ! then the command.")
+        end)
+
+        addcmd("clearchat", function()
+            send_msg(". \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n .")
+        end)
+
+        ------------------------------------------------------------------------
+
+        local end_time = tick()
+
+        spawn(function()
+            if rawlen(commands) == rawlen(cmd_info) then
+                table.sort(commands)
+                send_msg("Commands loaded in: " .. tostring(math.round(end_time - start_time)) .. " Seconds!")
+            else
+                warn("Commands failed to load...")
+            end
+        end)
+
+        wait(0.5)
+        send_msg("Please type: " .. prefix.. "enable to begin")
+
+        for _, ppl in pairs(whitelisted_players) do 
+            warn(ppl)
         end
 
+        -- // main function logic \\ --
+        
+        TextChatService.MessageReceived:Connect(function(txtchatmsg)
+            chat_sent = txtchatmsg.Text
+            txtchannel = txtchatmsg.TextChannel
+            player_sent = tostring(txtchatmsg.TextSource)
+        
+            if player_sent == tostring(localplayer) then
+                env.recent_chat_sent = chat_sent
+            end
+        
+            for cmd_name, cmd in pairs(commands) do
+                local true_cmd = prefix..cmd_name
 
+                if enabled and string.find(chat_sent, true_cmd) and table.find(whitelisted_players, player_sent) then
+                    print("Running command:", cmd_name)
+                    
+                    xpcall(function() cmd() end, function(err)
+                        send_msg("Oops, an error occurred. Sorry!")
+                        warn(err)
+                    end)
 
+                    table.insert(commands_sent, cmd_name)
 
-    elseif Enabled and table.find(BlacklistedPlayers, PlayerCalling) then
-        if string.find(Text, CommandList) or string.find(Text, CommandList2) then 
-            TextChannel:SendAsync("You (" .. PlayerCalling .. ") are blacklisted from running any commands.")
-        end
-	end
-
-    repeat
-        task.wait(1)
-        CoolDown = false
-    until CoolDown == false
-end)
-
-
-while task.wait(8) do
-	if Enabled == false and Index ~= 2 then 
-		game.TextChatService.TextChannels.RBXGeneral:SendAsync("Hello There! To get started type (!enable) a list of commands can be seen by typing (!cmds)")
-		Index = Index + 1
-	end
+                    wait(cooldown)
+                elseif table.find(blacklisted_players, player_sent) then
+                    send_msg("You are blocked from running commands.")
+                elseif not enabled and string.find(chat_sent, true_cmd) and table.find(whitelisted_players, player_sent) then
+                   commands["enable"]()
+                end
+            end
+        end)
+    end    
 end
-
