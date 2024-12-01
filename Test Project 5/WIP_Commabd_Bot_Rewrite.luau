@@ -1,8 +1,3 @@
---[[
-    neurals command bot!
-    version: 0 (pre-release)
-]]--
-
 -- // enviroment setup \\ -- 
 if getgenv().enabled then
     error("Already Executed!")
@@ -26,6 +21,7 @@ else
     local insert = table.insert
     local remove = table.remove
     local cloneref = cloneref or getgenv().cloneref or function(object) return object end
+    local webhook = nil -- add ur own webhook here if u want to impliment logs / send_owner_message command
 
     if env and cloneref then
         -- // Servicies \\ -- 
@@ -55,13 +51,14 @@ else
         local localplayer = Players.LocalPlayer
         local owner_player = localplayer.Name
 
-        local send_msg = function(msg)
+        local send_msg = function(msg, textchannel)
+            if not textchannel then textchannel = "RBXGeneral" end
             if sfind(recent_chat_sent, "#") then 
-                TextChatService.TextChannels.RBXGeneral:SendAsync("Last Text Filtered! Please wait...")
+                TextChatService.TextChannels[textchannel]:SendAsync("Last Text Filtered! Please wait...")
                 wait(2)
-                TextChatService.TextChannels.RBXGeneral:SendAsync(msg)
+                TextChatService.TextChannels[textchannel]:SendAsync(msg)
             else
-                TextChatService.TextChannels.RBXGeneral:SendAsync(msg)
+                TextChatService.TextChannels[textchannel]:SendAsync(msg)
             end
         end
 
@@ -81,11 +78,6 @@ else
                     rawset(t, k, v)
                 end
             end,
-           __call = function()
-                for player, v in whitelisted_players do 
-                    send_msg("Player: " .. player .. " is currently whitelisted!")
-                end
-           end 
         })
 
         -- // command inf \\ -- 
@@ -93,6 +85,8 @@ else
 
         local cmd_info = {
             ["blacklist"] = "(OWNER ONLY) (blacklist <player>) Makes the player chosen unable to access commands.",
+            ["bring"] = "Bring me to your character!",
+            ["chat"] = "Forces the bot to send a chat!",
             ["checkbypassers"] = "Checks chat logs to see if anyone may be bypassing! (unreliable)",
             ["checkwhitelist"] = "Displays all whitelisted players!",
             ["clearchat"] = "Clears chat!",
@@ -101,16 +95,20 @@ else
             ["dance"] = "(dance<number>) Allows you to make me dance randomly or your choice of dance!",
             ["disable"] = "(OWNER ONLY) BOOLVALUE: Disables bot",
             ["enable"] = "BOOLVALUE: Enables bot",
+            ["fling"] = "Flings my character!",
             ["freeze"] = "BOOLVALUE: Freezes bot! to unfreeze type: unfreeze",
+            ["goto"] = "(goto <player>) Sends me to player!",
             ["help"] = "(help <command>) Displays help about certain commands!",
             ["jump"] = "Forces bot to jump!",
             ["kill"] = "Kills the character!",
+            ["listchannels"] = "Lists channels available for chat command!",
             ["mimic"] = "BOOLVALUE: (mimic <player>) Copies the chat of the player!",
             ["prefix"] = "(prefix <character>) Changes the prefix for running commands!",
             ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
             ["remind"] = "Reminds players of how to execute commands!",
             ["sit"] = "Forces bot to sit!",
             ["stalk"] = "BOOLVALUE: (stalk <player>) Follows the player where ever they go... ;)",
+            ["status"] = "Tells you wether i am Enabled or Disabled!",
             ["spin"] = "BOOLVALUE: (spin<number>) Spins me right round, right round :D",
             ["unfreeze"] = "BOOLVALUE: Unfreezes bot! to freeze type: freeze",
             ["unmimic"] = "BOOLVALUE: Stops the mimic.",
@@ -120,6 +118,17 @@ else
         }
 
         local default_cmds = {"dance", "jump", "sit", "kill", "remind"}
+
+        local channels = {
+            ["general"] = "RBXGeneral",
+            ["current"] = txtchannel
+        }
+
+        local info_channels = {
+            ["general"] = "The global channel, (everyone can see)",
+            ["current"] = "The current channel, (private / global)"
+        }
+
         
 
         -- // function setup \\ --
@@ -458,21 +467,89 @@ else
                 local has_unsupported = false
                 for i = 1, #chat do
                     local char = chat:sub(i, i)
-                    if not sfind(supported, char) then
+
+                    if not tfind(supported, char) then
                         has_unsupported = true
                         break
+                    elseif tfind(supported, char) then
+                        if char[i-1] == "<" or char[i-1] == ">" then
+                            send_msg("Player: (" .. tostring(player) .. ") is bypassing using < and > method!. (:_:)")
+                            insert(caught)
+                        end 
                     end
                 end
                 
-                if has_unsupported and not sfind(caught, player) then
-                    send_msg("Player: (" .. tostring(player) .. ") is bypassing. (T_T)")
+                if has_unsupported and not tfind(caught, player) then
+                    send_msg("Player: (" .. tostring(player) .. ") is bypassing using unsupported characters!. (T_T)")
                     insert(caught, player)
                 end
             end
         end)
 
         addcmd("checkwhitelist", function()
-            whitelisted_players()
+            for i, player in whitelisted_players do 
+                send_msg("Player: " .. player .. " is currently whitelisted!")
+            end
+        end)
+
+        addcmd("chat", function()
+            local message_to_send = gsub(chat_sent, prefix.."chat ", "")
+            for channel, true_value in channels do
+                if sfind(message_to_send, channel) then
+                    local new_message = gsub(message_to_send, tostring(channel), "")
+
+                    send_msg(new_message, true_value)
+                end
+            end
+        end)
+
+        addcmd("listchannels", function()
+            for channel_name, true_name in info_channels do 
+                send_msg(channel_name..": "..true_name)
+            end
+        end)
+
+        addcmd("fling", function()
+            local lproot = lp_root()
+            local old_pos = lp_root.Position
+
+            lproot.AssemblyAngularVelocity = Vector3.new(900, 900, 900)
+            lproot.AssemblyLinearVelocity = Vector3.new(900, 900, 900)
+
+            localplayer.CharacterAdded:Connect(function()
+                wait(1)
+                local current_root = lp_root()
+                
+                create_tween(current_root.Position, old_pos, 3)
+            end)
+        end)
+
+        addcmd("bring", function()
+            local their_root = return_root(return_char(player_sent))
+            local lp_root = lp_root()
+
+            create_tween(lp_root.Position, their_root.Position, 3)
+        end)
+
+        addcmd("goto", function()
+            local chosneplr = Players[gsub(chat_sent, prefix.."goto", "")]
+
+            local their_root = return_root(return_char(chosneplr))
+            local lp_root = lp_root()
+
+            create_tween(lp_root.Position, their_root.Position, 3)
+        end)
+
+        addcmd("status", function()
+            local status = function()
+                return enabled
+            end
+
+            if status then
+                send_msg("I am currently: (ENABLED)")
+            else
+                send_msg("I am currently: (DISABLED)")
+            end
         end)
 
         ------------------------------------------------------------------------
@@ -481,7 +558,7 @@ else
 
         spawn(function()
             if rawlen(commands) == rawlen(cmd_info) then
-                send_msg("Commands loaded in: " .. tostring(math.round(end_time - start_time)) .. " Seconds!")
+                send_msg("(REWRITE) Commands loaded in: " .. tostring(math.round(end_time - start_time)) .. " Seconds!")
             else
                 warn("Commands failed to load...")
             end
@@ -489,10 +566,6 @@ else
 
         wait(0.5)
         send_msg("Please type: " .. prefix.. "enable to begin")
-
-        for _, ppl in pairs(whitelisted_players) do 
-            warn(ppl)
-        end
 
         -- // chat function logic \\ --
         
@@ -509,7 +582,7 @@ else
             for cmd_name, cmd in pairs(commands) do
                 local true_cmd = prefix..cmd_name
 
-                if enabled and sfind(chat_sent, true_cmd) and sfind(whitelisted_players, player_sent) then
+                if enabled and sfind(chat_sent, true_cmd) and tfind(whitelisted_players, player_sent) then
                     spawn(function()
                         print("Running command:", cmd_name)
                         
@@ -522,9 +595,9 @@ else
 
                         wait(cooldown)
                     end)
-                elseif sfind(blacklisted_players, player_sent) then
+                elseif tfind(blacklisted_players, player_sent) then
                     send_msg("You are blocked from running commands.")
-                elseif not enabled and sfind(chat_sent, true_cmd) and sfind(whitelisted_players, player_sent) then
+                elseif not enabled and sfind(chat_sent, true_cmd) and tfind(whitelisted_players, player_sent) then
                    commands["enable"]()
                 end
             end
@@ -534,7 +607,7 @@ else
             end
 
             if enabled and rawlen(commands_sent) <= 0 then
-                delay(5, function()
+                delay(20, function()
                     local rndm_command = default_cmds[math.random(1, rawlen(default_cmds))]
                     commands[rndm_command]()
                 end)
