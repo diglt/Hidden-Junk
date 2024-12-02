@@ -1,15 +1,15 @@
+--[[
+    Neurals Command Bot!
+    Version: 0 (Pre-Release)
+    Working On: Ask Command
+]]--
+
 -- // enviroment setup \\ -- 
 if getgenv().enabled then
     error("Already Executed!")
 else
-    getgenv().SendMessages = true
+    getgenv().send_messages = true
     getgenv().global_allow = false
-
-    if not SendMessages then
-        SendAsync = function()
-            return nil
-        end
-    end
 
     local env = getgenv()
     local wait = task.wait
@@ -20,12 +20,15 @@ else
     local delay = task.delay
     local insert = table.insert
     local remove = table.remove
+    local request = env.request or request or http_request
     local cloneref = cloneref or getgenv().cloneref or function(object) return object end
     local webhook = nil -- add ur own webhook here if u want to impliment logs / send_owner_message command
+    local api_key = "" -- add ur own API key, for what language model u want the "ask" command to generate from
 
     if env and cloneref then
         -- // Servicies \\ -- 
         local Players = cloneref(game:GetService("Players"))
+        local HttpService = cloneref(game:GetService("HttpService"))
         local TweenService = cloneref(game:GetService("TweenService"))
         local TextChatService = cloneref(game:GetService("TextChatService"))
         local TeleportService = cloneref(game:GetService("TeleportService"))
@@ -80,10 +83,25 @@ else
             end,
         })
 
+        -- // settings functionality \\ --
+
+        if not send_messages then
+            SendAsync = function()
+                return nil
+            end
+        end
+    
+        if global_allow then
+            for a,b in Players:GetPlayers() do 
+                table.insert(whitelisted_players, b)
+            end
+        end
+
         -- // command inf \\ -- 
         local start_time = tick()
 
         local cmd_info = {
+            ["ask"] = "(ask <question>) Sends a request to the internet to answer your question!",
             ["blacklist"] = "(OWNER ONLY) (blacklist <player>) Makes the player chosen unable to access commands.",
             ["bring"] = "Bring me to your character!",
             ["chat"] = "Forces the bot to send a chat!",
@@ -105,6 +123,7 @@ else
             ["mimic"] = "BOOLVALUE: (mimic <player>) Copies the chat of the player!",
             ["prefix"] = "(prefix <character>) Changes the prefix for running commands!",
             ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
+            ["roast"] = "(roast <player>) Sends a random roast about the player!",
             ["remind"] = "Reminds players of how to execute commands!",
             ["sit"] = "Forces bot to sit!",
             ["stalk"] = "BOOLVALUE: (stalk <player>) Follows the player where ever they go... ;)",
@@ -213,6 +232,16 @@ else
             end
         end
 
+        local function string_to_player(string)
+            for _, player in pairs(Players:GetPlayers()) do 
+                if player ~= localplayer then
+                    if sfind(player.Name, string) or sfind(player.DisplayName, string) then
+                        return player
+                    end
+                end
+            end
+        end
+
         --------------------------------------------------------------------------------------
 
         addcmd("enable", function()
@@ -275,9 +304,9 @@ else
         
             for cmd_name, _ in pairs(cmd_info) do
                 if string.len(long_list) < 150 then 
-                    long_list = long_list .. cmd_name .. "\n"
+                    long_list = long_list .. cmd_name .. ",".. "\n"
                 else
-                    longer_list = longer_list .. cmd_name .. "\n"
+                    longer_list = longer_list .. cmd_name .. ",".. "\n"
                 end
             end
         
@@ -304,34 +333,24 @@ else
         addcmd("whitelist", function()
             if player_sent == owner_player then
                 local cleared_name = gsub(chat_sent, prefix.."whitelist ", "")
+                local cleared_player = string_to_player(cleared_name)
 
-                for _, player in pairs(Players:GetPlayers()) do 
-                    if player ~= localplayer then
-                        if sfind(player.Name, cleared_name) or sfind(player.DisplayName, cleared_name) then
-                            insert(whitelisted_players, tostring(player))
-                            send_msg("Successfully whitelisted: " .. tostring(player))
-                        end
-                    end
-                end
+                insert(whitelisted_players, tostring(cleared_player))
+                send_msg("Successfully whitelisted: " .. tostring(cleared_player))
             end
         end)
 
         addcmd("blacklist", function()
             if player_sent == owner_player then
                 local cleared_name = gsub(chat_sent, prefix.."blacklist ", "")
+                local cleared_player = string_to_player(cleared_name)
+                
+                pcall(function()
+                    insert(blacklisted_players, tostring(cleared_name))
+                    remove(whitelisted_players, tostring(cleared_name))
+                end)
 
-                for _, player in pairs(Players:GetPlayers()) do 
-                    if player ~= localplayer then
-                        if sfind(player.Name, cleared_name) or sfind(player.DisplayName, cleared_name) then
-                            pcall(function()
-                                insert(blacklisted_players, tostring(player))
-                                remove(whitelisted_players, tostring(player))
-                            end)
-
-                            send_msg("Successfully blacklisted: " .. tostring(player))
-                        end
-                    end
-                end
+                send_msg("Successfully blacklisted: " .. tostring(cleared_name))
             end
         end)
 
@@ -403,17 +422,14 @@ else
 
         addcmd("mimic", function()
             player_mimicking = gsub(chat_sent, prefix.."mimic ", "")
+            local cleared_player = string_to_player(player_mimicking)
 
-            for _, player in pairs(Players:GetPlayers()) do 
-                if player ~= localplayer then
-                    if sfind(player.Name, player_mimicking) or sfind(player.DisplayName, player_mimicking) then
-                        is_mimicing = true
+            if cleared_player then
+                is_mimicing = true
 
-                        player_mimicking = tostring(player)
+                player_mimicking = tostring(cleared_player)
 
-                        send_msg("Beginning to mimic: " .. player_mimicking)
-                    end
-                end
+                send_msg("Beginning to mimic: " .. player_mimicking)
             end
         end)
 
@@ -511,7 +527,7 @@ else
 
         addcmd("fling", function()
             local lproot = lp_root()
-            local old_pos = lp_root.Position
+            local old_pos = lproot.Position
 
             lproot.AssemblyAngularVelocity = Vector3.new(900, 900, 900)
             lproot.AssemblyLinearVelocity = Vector3.new(900, 900, 900)
@@ -520,7 +536,7 @@ else
                 wait(1)
                 local current_root = lp_root()
                 
-                create_tween(current_root.Position, old_pos, 3)
+                create_tween(current_root, old_pos, 3)
             end)
         end)
 
@@ -528,27 +544,72 @@ else
             local their_root = return_root(return_char(player_sent))
             local lp_root = lp_root()
 
-            create_tween(lp_root.Position, their_root.Position, 3)
+            create_tween(lp_root, their_root.Position, 3)
         end)
 
         addcmd("goto", function()
-            local chosneplr = Players[gsub(chat_sent, prefix.."goto", "")]
+            local chosenplr = gsub(chat_sent, prefix.."goto ", "")
+            local cleared_player = string_to_player(chosenplr)
 
-            local their_root = return_root(return_char(chosneplr))
-            local lp_root = lp_root()
-
-            create_tween(lp_root.Position, their_root.Position, 3)
+            if cleared_player then 
+                local their_root = return_root(return_char(cleared_player))
+                local lp_root = lp_root()
+    
+                create_tween(lp_root, their_root.Position, 3)
+                send_msg("Going to: " .. tostring(cleared_player))
+            end
         end)
 
         addcmd("status", function()
-            local status = function()
-                return enabled
-            end
-
-            if status then
+            if enabled then
                 send_msg("I am currently: (ENABLED)")
             else
                 send_msg("I am currently: (DISABLED)")
+            end
+        end)
+
+        addcmd("roast", function()
+            local roasts = {"Is so stinky, even asmongold wouldn't bear with them", "truly must've been dropped as a child", "clearly has no friends LOL, what a bozo.", "is a cutie patootie :3"}
+            local plr_to_roast = gsub(chat_sent, prefix.."roast ", "")
+            local roast = roasts[math.random(1, rawlen(roasts))]
+            
+            send_msg(plr_to_roast.. " " .. roast)
+        end)
+
+        addcmd("ask", function()
+            local question = gsub(chat_sent, prefix.."ask ", "")
+            local api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+
+            local url = api_url .. "?key=" .. api_key
+            local headers = {
+                ["Content-Type"] = "application/json"
+            }
+            local payload = {
+                contents = {
+                    {
+                        parts = {
+                            { text = question }
+                        }
+                    }
+                }
+            }
+            
+            local jsonData = HttpService:JSONEncode(payload)
+        
+            local success, response = pcall(function()
+                return request({
+                    ["Url"] = url,
+                    ["Method"] = "POST",
+                    ["Headers"] = headers,
+                    ["Body"] = jsonData
+                })
+            end)
+        
+            if success then
+                local result = HttpService:JSONDecode(response.Body)
+                print("API Response:", result, unpack(result))
+            else
+                warn("Failed to call Gemini API:", response)
             end
         end)
 
@@ -597,17 +658,21 @@ else
                     end)
                 elseif tfind(blacklisted_players, player_sent) then
                     send_msg("You are blocked from running commands.")
-                elseif not enabled and sfind(chat_sent, true_cmd) and tfind(whitelisted_players, player_sent) then
+                elseif not enabled and sfind(chat_sent, true_cmd) and true_cmd == prefix.."enable" and tfind(whitelisted_players, player_sent) then
                    commands["enable"]()
+                   wait(cooldown)
+                elseif not enabled and sfind(chat_sent, true_cmd) and true_cmd == prefix.."status" then
+                    commands["status"]()
+                    wait(cooldown)
                 end
             end
 
             if is_mimicing and player_sent == player_mimicking then
-                send_msg(chat_sent)
+                send_msg(chat_sent, txtchannel)
             end
 
             if enabled and rawlen(commands_sent) <= 0 then
-                delay(20, function()
+                delay(30, function()
                     local rndm_command = default_cmds[math.random(1, rawlen(default_cmds))]
                     commands[rndm_command]()
                 end)
