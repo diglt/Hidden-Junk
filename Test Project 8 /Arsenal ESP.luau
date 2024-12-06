@@ -1,3 +1,12 @@
+--[[
+    Neurals ESP!
+    Learnt this from watching a youtoob tutorial: https://www.youtube.com/watch?v=r9AgrEgNmbc&t=1232s
+    Credits:
+        0x83 - Tutorial Creator
+        Neural - Script Writer
+        ChatGPT - Rainbow Function (I'm not doing allat math mf)
+]]--
+
 local IsRainbow = true
 
 local Camera = workspace.CurrentCamera
