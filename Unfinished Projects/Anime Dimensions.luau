@@ -1,3 +1,7 @@
+--[[
+    Status: (Potential Return)
+]]--
+
 getgenv().KillToggle = false
 getgenv().AutoSkill = false
 
