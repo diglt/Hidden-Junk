@@ -1,3 +1,11 @@
+--[[
+    Neurals Aimbot / ESP Gui
+    Status: Work In Progress (I hate making these, math is soooo fking borin)
+    Credits:
+        Rayfield - UI Library
+        Neural - Script Writer
+]]--
+
 
 -- // Enviroment and locals \\ --
 
