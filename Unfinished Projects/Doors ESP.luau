@@ -15,7 +15,6 @@ local titles_tbl = {}
 local names = {}
 
 function continue_scanning()
----@diagnostic disable-next-line: undefined-global
     function find_objects()
         for _, obj in pairs(workspace:GetDescendants()) do 
             if string.find(obj.Name, "Obtain") and obj:IsA("Model") then
@@ -89,7 +88,6 @@ function continue_scanning()
         end
     end
 
----@diagnostic disable-next-line: undefined-global
     function update_line()
         find_objects()
 
