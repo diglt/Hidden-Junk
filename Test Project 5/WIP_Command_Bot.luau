@@ -3,6 +3,8 @@
 	Current Version: 1
 	Status: (DISCONTINUED)
 	Reason: Rewrite is in progress lul, cuz this code is a huge mess
+    	Credits:
+		Neural - everything
 ]]--
 
 local TextChatService = game:GetService("TextChatService")
