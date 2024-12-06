@@ -1,3 +1,10 @@
+--[[
+	(OLD) Version of Neurals Command Bot!
+	Current Version: 1
+	Status: (DISCONTINUED)
+	Reason: Rewrite is in progress lul, cuz this code is a huge mess
+]]--
+
 local TextChatService = game:GetService("TextChatService")
 local TeleportService = game:GetService("TeleportService")
 local PathfindingService = game:GetService("PathfindingService")
