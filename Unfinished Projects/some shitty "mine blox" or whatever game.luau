@@ -1,3 +1,8 @@
+--[[
+    Status: (Personal Script / Never Returning)
+]]--
+
+
 local rp = game.Players.LocalPlayer.Character.HumanoidRootPart
 local ch = game.Players.LocalPlayer.Character
 local mh = ch.Humanoid.Health
