@@ -1,7 +1,10 @@
 --[[
     Neurals Command Bot!
     Version: 0 (Pre-Release)
+    Status: Work In Progress
     Working On: Ask Command
+    Credits:
+        Neural - everything
 ]]--
 
 -- // enviroment setup \\ -- 
