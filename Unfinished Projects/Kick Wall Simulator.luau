@@ -1,3 +1,7 @@
+--[[
+    Status: (Never Returning)
+]]--
+
 -- Toggles -- 
 getgenv().EnableStrength = false 
 getgenv().EnableGift = false
