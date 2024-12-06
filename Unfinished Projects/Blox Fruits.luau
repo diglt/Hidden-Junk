@@ -1,3 +1,7 @@
+--[[
+    Status: (Potential Return)
+]]--
+
 -- Toggles -- 
 getgenv().AutoClick = false
 getgenv().AutoKillMob = false
