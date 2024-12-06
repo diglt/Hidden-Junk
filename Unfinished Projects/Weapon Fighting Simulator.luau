@@ -1,3 +1,9 @@
+--[[
+    Status: (Never Returning)
+]]--
+
+
+
 local cloneref = cloneref or function() return obj end 
 local lp = cloneref(game:GetService("Players")).LocalPlayer
 local Workspace = cloneref(game:GetService("Workspace"))
