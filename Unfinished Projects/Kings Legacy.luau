@@ -1,3 +1,8 @@
+--[[
+    Status: (Most Likely Not Returning)
+]]--
+
+
 --[[ Toggles ]]-- 
 getgenv().EnableAttack = false 
 getgenv().EnableFruitCollect = false
