@@ -1,3 +1,9 @@
+--[[
+    Status: (Basically done, if u dm me i'll finish it else):
+        Not Gonna Finish
+]]--
+
+
 local Players = game:GetService("Players")
 local lp = game.Players.LocalPlayer
 local rp = lp.Character.HumanoidRootPart
