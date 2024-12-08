@@ -5,28 +5,46 @@
     Working On: Ask Command
     Credits:
         Neural - everything
+
+    Recent Update:
+        Fix send_msg bug with trying to send the txtchannel instance through SendAsync
+        Fix disabling send_messages not working, now changes the original function
+        Fix other smaller misc bugs, ones including not properly searching using string_to_player
+        Added user_commands for clearer customization
+        Added more comments for clarity
+        Remove print statements in pathfinding function
 ]]--
+
+
+-- // User Options (YOU CHOOSE HERE) \\ --
+getgenv().user_commands = {
+    ["send_messages"] = true, -- enables sending messages in chat
+    ["global_allow"] = false, -- enables every player to access commands
+    ["random_begin"] = false, -- enables random default command to run every random_time seconds!
+    ["random_time"] = 30, -- sets the time for when a default command from random_begin runs!
+}
 
 -- // enviroment setup \\ -- 
 if getgenv().enabled then
     error("Already Executed!")
 else
-    getgenv().send_messages = true
-    getgenv().global_allow = false
-
-    local env = getgenv()
+    -- // Common Used Functions \\ --
     local wait = task.wait
-    local sfind = string.find
+    local delay = task.delay
     local tfind = table.find
     local gsub = string.gsub
     local spawn = task.spawn
-    local delay = task.delay
+    local sfind = string.find
     local insert = table.insert
     local remove = table.remove
-    local request = env.request or request or http_request
-    local cloneref = cloneref or getgenv().cloneref or function(object) return object end
+
+    -- // Enviroment Functions \\ --
+
+    local env = getgenv() or getfenv(script) or _G
+    local request = env.request or request or http_request or error("Request Not Recieved.")
+    local cloneref = cloneref or env.cloneref or function(object) return object end
     local webhook = nil -- add ur own webhook here if u want to impliment logs / send_owner_message command
-    local api_key = "" -- add ur own API key, for what language model u want the "ask" command to generate from
+    local api_key = nil -- add ur own API key, for what language model u want the "ask" command to generate from
 
     if env and cloneref then
         -- // Servicies \\ -- 
@@ -46,9 +64,9 @@ else
         env.is_stalking = false
         env.is_spinning = false
         
-        local recent_chat_sent = ""
         local prefix = "!"
         local cooldown = 1
+        local recent_chat_sent = ""
 
         local player_frozen
         local player_stalking
@@ -59,6 +77,7 @@ else
 
         local send_msg = function(msg, textchannel)
             if not textchannel then textchannel = "RBXGeneral" end
+            local textchannel = tostring(textchannel)
             if sfind(recent_chat_sent, "#") then 
                 TextChatService.TextChannels[textchannel]:SendAsync("Last Text Filtered! Please wait...")
                 wait(2)
@@ -72,9 +91,9 @@ else
         local commands = {}
         local commands_sent = {}
         local check_chat_logs = {}
+        local ran_send_owner_cmd = {}
         local blacklisted_players = {}
         local whitelisted_players = {owner_player}
-        local ran_send_owner_cmd = {}
 
         setmetatable(whitelisted_players, {
             __newindex = function(t,k,v)
@@ -88,17 +107,18 @@ else
 
         -- // settings functionality \\ --
 
-        if not send_messages then
-            SendAsync = function()
-                return nil
+        if not user_commands["send_messages"] then
+            send_msg = function()
+                return
             end
         end
     
-        if global_allow then
+        if user_commands["global_allow"] then
             for a,b in Players:GetPlayers() do 
                 table.insert(whitelisted_players, b)
             end
         end
+
 
         -- // command inf \\ -- 
         local start_time = tick()
@@ -124,6 +144,7 @@ else
             ["kill"] = "Kills the character!",
             ["listchannels"] = "Lists channels available for chat command!",
             ["mimic"] = "BOOLVALUE: (mimic <player>) Copies the chat of the player!",
+            ["orbit"] = "BOOLVALUE: (orbit <player> Orbits around the selected player!",
             ["prefix"] = "(prefix <character>) Changes the prefix for running commands!",
             ["rejoin"] = "(OWNER ONLY) Rejoins the game!",
             ["roast"] = "(roast <player>) Sends a random roast about the player!",
@@ -134,12 +155,13 @@ else
             ["spin"] = "BOOLVALUE: (spin<number>) Spins me right round, right round :D",
             ["unfreeze"] = "BOOLVALUE: Unfreezes bot! to freeze type: freeze",
             ["unmimic"] = "BOOLVALUE: Stops the mimic.",
+            ["unorbit"] = "BOOLVALUE: Stops orbitting.",
             ["unstalk"] = "BOOLVALUE: Stops stalking the selected player!",
             ["unspin"] = "BOOLVALUE: Stops spinning.",
             ["whitelist"] = "(OWNER ONLY) (whitelist <player>) Allows owner to set access to commands!"
         }
 
-        local default_cmds = {"dance", "jump", "sit", "kill", "remind"}
+        local default_cmds = {"dance", "jump", "sit", "remind"}
 
         local channels = {
             ["general"] = "RBXGeneral",
@@ -148,7 +170,7 @@ else
 
         local info_channels = {
             ["general"] = "The global channel, (everyone can see)",
-            ["current"] = "The current channel, (private / global)"
+            ["current"] = "The current channel, (private / general)"
         }
 
         
@@ -228,7 +250,7 @@ else
                 end)
 
                 if try_path then
-                    print("Success!")
+                    return
                 else
                     error("ZERO'D GRONK: ".. fuckederror)
                 end
@@ -349,8 +371,8 @@ else
                 local cleared_player = string_to_player(cleared_name)
                 
                 pcall(function()
-                    insert(blacklisted_players, tostring(cleared_name))
-                    remove(whitelisted_players, tostring(cleared_name))
+                    insert(blacklisted_players, cleared_player)
+                    remove(whitelisted_players, cleared_player)
                 end)
 
                 send_msg("Successfully blacklisted: " .. tostring(cleared_name))
@@ -407,7 +429,6 @@ else
                                 local their_root = return_root(return_char(player))
 
                                 create_pathfind(their_root.Position, lp_hum)
-                                print("done pathfinding!")
                             end)
                         end
                     end
@@ -532,6 +553,8 @@ else
             local lproot = lp_root()
             local old_pos = lproot.Position
 
+            wait(1)
+
             lproot.AssemblyAngularVelocity = Vector3.new(900, 900, 900)
             lproot.AssemblyLinearVelocity = Vector3.new(900, 900, 900)
 
@@ -578,6 +601,7 @@ else
             
             send_msg(plr_to_roast.. " " .. roast)
         end)
+        
 
         addcmd("ask", function()
             local question = gsub(chat_sent, prefix.."ask ", "")
@@ -614,6 +638,15 @@ else
             else
                 warn("Failed to call Gemini API:", response)
             end
+        end)
+
+
+        addcmd("orbit", function()
+            return
+        end)
+
+        addcmd("unorbit", function()
+            return
         end)
 
         ------------------------------------------------------------------------
@@ -663,19 +696,23 @@ else
                     send_msg("You are blocked from running commands.")
                 elseif not enabled and sfind(chat_sent, true_cmd) and true_cmd == prefix.."enable" and tfind(whitelisted_players, player_sent) then
                    commands["enable"]()
+                   insert(commands_sent, cmd_name)
+
                    wait(cooldown)
                 elseif not enabled and sfind(chat_sent, true_cmd) and true_cmd == prefix.."status" then
                     commands["status"]()
+                    insert(commands_sent, cmd_name)
+
                     wait(cooldown)
                 end
             end
 
             if is_mimicing and player_sent == player_mimicking then
-                send_msg(chat_sent, txtchannel)
+                send_msg(tostring(chat_sent), txtchannel)
             end
 
-            if enabled and rawlen(commands_sent) <= 0 then
-                delay(30, function()
+            if user_commands["random_begin"] and enabled and rawlen(commands_sent) <= 0 then
+                delay(user_commands["random_time"], function()
                     local rndm_command = default_cmds[math.random(1, rawlen(default_cmds))]
                     commands[rndm_command]()
                 end)
