@@ -4,39 +4,6 @@ warn("EXECUTED") -- remove this if u want
 local PutUser = "PLAYERS USERNAME "
 local PutKeybind = "E"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- // Setup Variables \\ --
 getgenv().Runnin = false
 AvoidList = {}
