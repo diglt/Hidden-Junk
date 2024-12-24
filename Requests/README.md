@@ -4,7 +4,7 @@
     <h1>
       <strong>
           <p>
-              Here is where all the project people have requested me to make are..
+              Here is where all the project people have requested me to make are.
           </p>
           <p>
             (They will never recieve an update)
